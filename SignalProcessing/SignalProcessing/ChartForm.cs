@@ -13,9 +13,10 @@ namespace SignalProcessing
 {
     public partial class ChartForm : Form
     {
-        public ChartForm(IEnumerable<Tuple<double,double>> values,string xTitle,string yTitle)
+        public ChartForm(IEnumerable<Tuple<double,double>> values,string xTitle,string yTitle,string title)
         {
             InitializeComponent();
+            this.Text = title;
             chart1.ChartAreas[0].AxisX.Minimum = 0;
             chart1.ChartAreas[0].AxisX.RoundAxisValues();
             chart1.ChartAreas[0].AxisX.Title = xTitle;
