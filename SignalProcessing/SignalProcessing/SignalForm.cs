@@ -135,6 +135,7 @@ namespace SignalProcessing
         private void loadDataButton_Click(object sender, EventArgs e)
         {
             (_settings, _signal) =LoadDataFromFile();
+            if (_signal == null) return;
             chart1.ChartAreas[0].AxisX.Minimum = 0;
             chart1.ChartAreas[0].AxisX.RoundAxisValues();
             chart1.ChartAreas[0].AxisX.Title = "t";
@@ -147,7 +148,7 @@ namespace SignalProcessing
             result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
         }
 
-        private void ShowChart(IList<Tuple<double, double>> values, string xTitle, string yTitle)
+        private void ShowChart(IEnumerable<Tuple<double, double>> values, string xTitle, string yTitle)
         {
             ChartForm chart = new ChartForm(values, xTitle, yTitle);
             chart.Show();            
@@ -155,55 +156,50 @@ namespace SignalProcessing
 
         private void dftClick(object sender, EventArgs e)
         {
+            ApplyTransform(DFT);
+        }
+
+        private void ApplyTransform(Func<Complex[], Direction, Complex[]> transformFunction)
+        {
             var signal = _signal;
             var settings = _settings;
             if (signal == null) return;
-
-            var result = new List<Tuple<double, double>>();
-            for (int i = 0; i < signal.Length; i++)
-            {
-                result.Add(new Tuple<double, double>(i / settings.XFrequency,signal[i]));
-            }            
-
-            var chartXLabel = "Гц";            
-            
-            int maxPower = FindMaxPower(result.Count);
+            var result = signal.Select((s, i) => new Tuple<double, double>(i / settings.XFrequency, signal[i]));
+            var chartXLabel = "Гц";
+            int maxPower = FindMaxPower(result.Count());
             int takeOnly = (int)Math.Pow(2, maxPower);
-
-            
-            (double[] amp, double[] spectre) = CalculateMetrics(DFT(result.Select((p) => new Complex(p.Item2, 0)).ToArray(), Direction.Forward));
-            result.Clear();
-            for (int i = 0; i < amp.Length; i++)
-            {
-                result.Add(new Tuple<double, double>(i * settings.XFrequency / amp.Length, amp[i]));
-            }
-            ShowChart(result, chartXLabel, _settings.YLabel);            
-            result.Clear();
-            for (int i = 0; i < spectre.Length; i++)
-            {
-                result.Add(new Tuple<double, double>(i * settings.XFrequency / spectre.Length, spectre[i]));
-            }
-            ShowChart(result, chartXLabel, _settings.YLabel);            
+            (double[] amp, double[] spectre) = CalculateMetrics(transformFunction(result.Select((p) => new Complex(p.Item2, 0)).ToArray(), Direction.Forward));
+            result = amp.Select((a, i) => new Tuple<double, double>(i * settings.XFrequency / amp.Length, amp[i]));
+            ShowChart(result, chartXLabel, _settings.YLabel);
+            result = spectre.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / spectre.Length, spectre[i]));
+            ShowChart(result, chartXLabel, _settings.YLabel);
         }
 
         private Complex[] FastDFT(Complex[] inputSignal, Direction direction)
         {
-            int N = inputSignal.Length;
-            var multiplier = (1 - (N + 1) / 2.0) * (int)direction + ((N + 1) / 2.0);
-            var result = new Complex[inputSignal.Length];
-            for (int k = 0; k < N; k++) // итоговые коэффициенты как сумма
+            var signalCut = inputSignal.Take(1<<FindMaxPower(inputSignal.Length)).ToArray();
+            int N = signalCut.Length;
+            if (N == 1)
+                return signalCut;
+            var Wn = Complex.FromPolarCoordinates(1, 2 * Math.PI / N);
+            //Wn = exp(2 * Pi * j / n);  // j – мнимая единица
+            Complex W = 1;
+            var C0 = FastDFT(signalCut.Where((s,i)=>i%2==0).ToArray(),direction);    // F0 = [f0,f2,...,fn-2]  // рекурсия
+            var C1 = FastDFT(signalCut.Where((s,i)=>i%2==1).ToArray(),direction);    //  F1 = [f1,f3,...,fn-1]
+            var C = new Complex[N];
+            for (var k = 0; k < N / 2; k++)
             {
-                for (int i = 0; i < N; i++) // внутренний цикл суммирования
-                {
-                    result[k] += inputSignal[i] * Complex.FromPolarCoordinates(1, 2.0 * Math.PI * k * (int)direction * i / N) / multiplier;
-                }
+                C[k] = C0[k] + W * C1[k];  // фрмула (3) первая часть преобразования
+                C[k + N / 2] = C0[k] - W * C1[k];   // Wk=-Wn/2+k   // свойство комплексной экспоненты
+                W += Wn;
             }
-            return result;
+            return C;
+
         }
 
         private void fdftClick(object sender, EventArgs e)
         {
-
+            ApplyTransform(FastDFT);
         }
     }
 }
