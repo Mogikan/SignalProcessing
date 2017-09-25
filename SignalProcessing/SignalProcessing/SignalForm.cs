@@ -162,7 +162,7 @@ namespace SignalProcessing
             (double[] amp, double[] phase) = CalculateMetrics(
                 transformFunction(signal.Select((s)=>new Complex(s,0)).ToArray(), Direction.Forward));
             var magnitudePoints = amp.Select(
-                (a, i) => new Tuple<double, double>(i * settings.XFrequency / amp.Length, amp[i])
+                (a, i) => new Tuple<double, double>(1.0*i * settings.XFrequency / amp.Length, amp[i])
                 );
             ShowChart(magnitudePoints, chartXLabel, _settings.YLabel,$"Magnitude {transformFunction.Method.Name}");
             var phasePoints = phase.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / phase.Length, s));
@@ -193,8 +193,110 @@ namespace SignalProcessing
                 return C.Select((c) => c / N).ToArray();
             }
             return C;
+        }
+
+        private Complex[] FastDFTN(Complex[] signal, Direction direction)
+        {
+            int N = signal.Length;
+            int maxPower = 10;// 
+               // FindMaxPower(N);
+            int L = 1 << maxPower;
+            int M = N / L;
+            N = M * L;
+            //int L = N / M;
+            //N =L* M, L=2P.
+            Complex[] calculationSignal = new Complex[N];
+            for (int i = 0; i < N; i++)
+            {
+                calculationSignal[i] = signal[i];
+            }
+            for (int i = 0; i < M; i++)
+            {
+                FastDFTStep(direction,i, M, L,ref calculationSignal); // вызов БПФ для отсчетов шагом M
+            }
+            var result = new Complex[N];
+            for (int s = 0; s < M; s++)
+            {
+                for (int r = 0; r < L; r++)
+                {
+                    for (int m = 0; m < M; m++)
+                    {
+                        result[r + s * L] += calculationSignal[m + r * M] * Complex.FromPolarCoordinates(1,(int)direction * 2 * Math.PI * m * (r + s * L) / N);                        
+                    }
+                }
+            }            
+            if (direction == Direction.Forward)
+            {
+                for (int k = 0; k < N; k++)
+                {
+                    result[k] = result[k] / N;
+                }
+            }
+            return result;
+        }
+
+        private int ReverseIndex(int index, int maxPower)
+        {
+            int R;
+            int Shift;
+            int k;
+            R = 0;
+            Shift = maxPower - 1;
+            int Low, High;
+            Low = 1;
+            High = 1 << Shift;
+            while (Shift >= 0)
+            {
+                k = ((index & Low) << Shift) | ((index & High) >> Shift);
+                R = R | k;
+                Shift -= 2;
+                Low = Low << 1;
+                High = High >> 1;
+            }
+            return R;
 
         }
+
+
+        private void FastDFTStep(Direction direction, int Z, int H, int N,ref Complex[] signal)
+        { // БПФ с шагом H от отсчета Z
+            int M = (int)Math.Log(N,2);
+            for (int i = 0; i < N; i++)
+            {
+                int k = ReverseIndex(i, M);
+                int p = Z + i * H;
+                int q = Z + k * H;
+                if (p < q)
+                {
+                    Complex temp = signal[p];
+                    signal[p] = signal[q];
+                    signal[q] = temp;                    
+                }
+            }
+            for (int s = 1; s <= M; s++)
+            {
+                int m = 1<<s;                
+                var Wm = Complex.FromPolarCoordinates(1, 2 * Math.PI * (int)direction / m);
+                for (int k = 0; k < N; k += m)
+                {
+                    Complex W = new Complex(1,0);
+                    for (int j = 0; j <= m / 2 - 1; j++)
+                    {
+                        int p = k + j + m / 2;
+                        int q = k + j;
+                        p = Z + p * H;
+                        q = Z + q * H;
+                        Complex t = signal[p] * W;
+                        Complex u = signal[q];
+                        signal[q] = t + u;
+                        signal[p] = u - t;
+                        //W = W * Wm;
+                        W = W*Wm;                        
+                    }
+                }
+            }
+        }
+
 
         private void fdftClick(object sender, EventArgs e)
         {
@@ -203,6 +305,11 @@ namespace SignalProcessing
             var signalCut = inputSignal.Take(1 << maxPower).ToArray();
             ApplyTransform(DFT,signalCut);
             ApplyTransform(FastDFT,signalCut);
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            ApplyTransform(FastDFTN, _signal);
         }
     }
 }
