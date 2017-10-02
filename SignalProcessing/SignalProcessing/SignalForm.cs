@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -104,6 +105,7 @@ namespace SignalProcessing
                 if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
                     var fileName = fileDialog.FileName;
+                    fileNameLabel.Text = Path.GetFileName(fileName);
                     using (var reader = new StreamReader(new FileStream(fileName, FileMode.Open)))
                     {
                         chart1.Series[0].Points.Clear();                     
@@ -126,19 +128,24 @@ namespace SignalProcessing
 
         private void loadDataButton_Click(object sender, EventArgs e)
         {
-            (_settings, _signal) =LoadDataFromFile();
+            (_settings, _signal) = LoadDataFromFile();
+            samplesCount.Text = _signal.Length.ToString();
             if (_signal == null) return;
             chart1.ChartAreas[0].AxisX.Minimum = 0;
             chart1.ChartAreas[0].AxisX.RoundAxisValues();
             chart1.ChartAreas[0].AxisX.Title = "t";
             chart1.ChartAreas[0].AxisY.Title = _settings.YLabel;
-            var result = new List<Tuple<double, double>>();
-            for (int i = 0; i < _signal.Length; i++)
-            {
-                result.Add(new Tuple<double, double>(i / _settings.XFrequency, _signal[i]));
-            }
+            Tuple<double, double>[] result = PrepareSignalPreviewData(_signal);
             result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
         }
+
+        private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal)=>
+            signal.Select((s, i) => new Tuple<double, double>(i / _settings.XFrequency, s)).ToArray();
+
+        private Tuple<double, double>[] PrepareSignalPreviewData(Complex[] signal) =>
+            signal.Select((s, i) => new Tuple<double, double>(i / _settings.XFrequency, s.Real)).ToArray();
+
+
 
         private void ShowChart(IEnumerable<Tuple<double, double>> values, string xTitle, string yTitle,string title)
         {
@@ -151,22 +158,28 @@ namespace SignalProcessing
             var inputSignal = _signal;
             int maxPower = FindMaxPower(inputSignal.Length);
             var signalCut = inputSignal.Take(1 << maxPower).ToArray();
-            ApplyTransform(DFT,signalCut);
+            ApplyTransform(DFT, signalCut, Direction.Forward);
         }
 
-        private void ApplyTransform(Func<Complex[], Direction, Complex[]> transformFunction,double[] signal)
-        {            
+        private void ApplyTransform(Func<Complex[], Direction, Complex[]> transformFunction,double[] signal,Direction direction)
+        {
             var settings = _settings;
-            if (signal == null) return;
+            if (signal == null)
+                return;
             var chartXLabel = "Гц";
-            (double[] amp, double[] phase) = CalculateMetrics(
-                transformFunction(signal.Select((s)=>new Complex(s,0)).ToArray(), Direction.Forward));
+            var result = transformFunction(GetComplexData(signal), direction);
+            (double[] amp, double[] phase) = CalculateMetrics(result);
             var magnitudePoints = amp.Select(
-                (a, i) => new Tuple<double, double>(1.0*i * settings.XFrequency / amp.Length, amp[i])
+                (a, i) => new Tuple<double, double>(1.0 * i * settings.XFrequency / amp.Length, amp[i])
                 );
-            ShowChart(magnitudePoints, chartXLabel, _settings.YLabel,$"Magnitude {transformFunction.Method.Name}");
+            ShowChart(magnitudePoints, chartXLabel, _settings.YLabel, $"Magnitude {transformFunction.Method.Name}");
             var phasePoints = phase.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / phase.Length, s));
-            ShowChart(phasePoints, chartXLabel, _settings.YLabel,$"Phase {transformFunction.Method.Name}");
+            ShowChart(phasePoints, chartXLabel, _settings.YLabel, $"Phase {transformFunction.Method.Name}");            
+        }
+
+        private static Complex[] GetComplexData(double[] signal)
+        {
+            return signal.Select((s) => new Complex(s, 0)).ToArray();
         }
 
         private Complex[] FastDFT(Complex[] inputSignal, Direction direction)
@@ -303,13 +316,127 @@ namespace SignalProcessing
             var inputSignal = _signal;
             int maxPower = FindMaxPower(inputSignal.Length);
             var signalCut = inputSignal.Take(1 << maxPower).ToArray();
-            ApplyTransform(DFT,signalCut);
-            ApplyTransform(FastDFT,signalCut);
+            Stopwatch timeChecker = new Stopwatch();
+            timeChecker.Start();
+            ApplyTransform(DFT,signalCut,Direction.Forward);
+            timeChecker.Stop();
+            long time1 = timeChecker.ElapsedMilliseconds;
+            timeChecker.Restart();
+            ApplyTransform(FastDFT,signalCut,Direction.Forward);
+            timeChecker.Stop();
+            var time2 = timeChecker.ElapsedMilliseconds;
+            MessageBox.Show($"DFT time {time1},{Environment.NewLine}FastDFT time {time2}");
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ApplyTransform(FastDFTN, _signal);
+            Stopwatch timeChecker = new Stopwatch();
+            timeChecker.Start();
+
+            ApplyTransform(FastDFTN, _signal,Direction.Forward);
+            timeChecker.Stop();
+            long time1 = timeChecker.ElapsedMilliseconds;
+            timeChecker.Restart();
+            ApplyTransform(DFT, _signal, Direction.Forward);
+            timeChecker.Stop();
+            var time2 = timeChecker.ElapsedMilliseconds;
+            MessageBox.Show($"DFT with step time {time1},{Environment.NewLine}DFT time {time2}");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
+            var filteredGarmonics = new Complex[transformedSignal.Length];// (Complex[])transformedSignal.Clone();
+            for (int i = 0; i < 6; i++)
+            {
+                filteredGarmonics[i] = transformedSignal[i];
+                filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
+            }            
+            var backSignal = DFT(filteredGarmonics, Direction.Inverse);
+            ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "5 Гармоник");
+
+
+            filteredGarmonics = new Complex[transformedSignal.Length];
+            for (int i = 0; i < 30; i++)
+            {
+                filteredGarmonics[i] = transformedSignal[i];
+                filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
+            }
+            backSignal = DFT(filteredGarmonics, Direction.Inverse);
+            ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "30 Гармоник");
+
+        }
+
+        private Complex[] LowFrequenciesFilter(Complex[] signal, int lowThresholdIndex)
+        {
+            for (int i = lowThresholdIndex+1; i<signal.Length-lowThresholdIndex; i++)
+            {
+                signal[i] = 0;
+            }
+            return signal;
+        }
+
+        private Complex[] HighFrequenciesFilter(Complex[] signal, int highThresholdIndex)
+        {
+            for (int i = 0; i < highThresholdIndex; i++)
+            {
+                signal[i] = 0;
+            }
+            for (int i = signal.Length - highThresholdIndex ; i < signal.Length; i++)
+            {
+                signal[i] = 0;
+            }
+            return signal;
+        }
+
+        private Complex[] RejectorFilter(Complex[] signal,int low, int high)
+        {
+            for (int i = low; i < high; i++)
+            {
+                signal[i] = 0;
+            }
+            return signal;
+        }
+
+        private Complex[] StripeFilter(Complex[] signal, int low, int high)
+        {
+            for (int i = 0; i < low; i++)
+            {
+                signal[i] = 0;
+            }
+            for (int i = high; i < signal.Length; i++)
+            {
+                signal[i] = 0;
+            }
+            return signal;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (lowRadio.Checked)
+            {
+                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);                
+                var backSignal = DFT(LowFrequenciesFilter(transformedSignal,(int)numericUpDown1.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Low frequencies filter");
+            }
+            if (highRadio.Checked)
+            {
+                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = DFT(HighFrequenciesFilter(transformedSignal, (int)numericUpDown2.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "High frequencies filter");
+            }
+            if (stripeRadio.Checked)
+            {
+                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = DFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value,(int)numericUpDown2.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Stripe frequencies filter");
+            }
+            if (rejectorRadio.Checked)
+            {
+                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = DFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Rejector frequencies filter");
+            }
         }
     }
 }
