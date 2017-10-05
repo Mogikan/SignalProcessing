@@ -48,6 +48,7 @@ namespace SignalProcessing
             {"sawtooth", new Settings(0,1,360,"") },
             {"triangle", new Settings(0,1,360,"") },
             {"square", new Settings(0,1,360,"") },
+            {"wav",new Settings(1<<15,1,44100,"")},
         };
 
         enum Direction
@@ -129,21 +130,33 @@ namespace SignalProcessing
         private void loadDataButton_Click(object sender, EventArgs e)
         {
             (_settings, _signal) = LoadDataFromFile();
-            samplesCount.Text = _signal.Length.ToString();
-            if (_signal == null) return;
+            DisplayData(_settings,_signal);
+        }
+
+        private void DisplayData(Settings settings,double[] signal,int n=0)
+        {
+            if (signal == null) return;
+            samplesCount.Text = signal.Length.ToString();            
             chart1.ChartAreas[0].AxisX.Minimum = 0;
             chart1.ChartAreas[0].AxisX.RoundAxisValues();
             chart1.ChartAreas[0].AxisX.Title = "t";
-            chart1.ChartAreas[0].AxisY.Title = _settings.YLabel;
-            Tuple<double, double>[] result = PrepareSignalPreviewData(_signal);
-            result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
+            chart1.ChartAreas[0].AxisY.Title = settings.YLabel;
+            Tuple<double, double>[] result = PrepareSignalPreviewData(signal,settings);
+            if (n != 0)
+            {
+                result.Take(n).ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
+            }
+            else
+            {
+                result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
+            }
         }
 
-        private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal)=>
-            signal.Select((s, i) => new Tuple<double, double>(i / _settings.XFrequency, s)).ToArray();
+        private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal,Settings settings)=>
+            signal.Select((s, i) => new Tuple<double, double>(i / settings.XFrequency, s)).ToArray();
 
-        private Tuple<double, double>[] PrepareSignalPreviewData(Complex[] signal) =>
-            signal.Select((s, i) => new Tuple<double, double>(i / _settings.XFrequency, s.Real)).ToArray();
+        private Tuple<double, double>[] PrepareSignalPreviewData(Complex[] signal,Settings settings) =>
+            signal.Select((s, i) => new Tuple<double, double>(i / settings.XFrequency, s.Real)).ToArray();
 
 
 
@@ -353,7 +366,7 @@ namespace SignalProcessing
                 filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
             }            
             var backSignal = DFT(filteredGarmonics, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "5 Гармоник");
+            ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "5 Гармоник");
 
 
             filteredGarmonics = new Complex[transformedSignal.Length];
@@ -363,7 +376,7 @@ namespace SignalProcessing
                 filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
             }
             backSignal = DFT(filteredGarmonics, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "30 Гармоник");
+            ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "30 Гармоник");
 
         }
 
@@ -417,26 +430,73 @@ namespace SignalProcessing
             {
                 var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);                
                 var backSignal = DFT(LowFrequenciesFilter(transformedSignal,(int)numericUpDown1.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Low frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Low frequencies filter");
             }
             if (highRadio.Checked)
             {
                 var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
                 var backSignal = DFT(HighFrequenciesFilter(transformedSignal, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "High frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "High frequencies filter");
             }
             if (stripeRadio.Checked)
             {
                 var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
                 var backSignal = DFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value,(int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Stripe frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Stripe frequencies filter");
             }
             if (rejectorRadio.Checked)
             {
                 var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
                 var backSignal = DFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal), "", _settings.YLabel, "Rejector frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Rejector frequencies filter");
             }
+        }
+
+        private (Settings settings,double[] signal) LoadWav()
+        {
+            using (var fileDialog = new OpenFileDialog())
+            {
+                if (fileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var fileName = fileDialog.FileName;
+                    fileNameLabel.Text = Path.GetFileName(fileName);
+                    using (var reader = new BinaryReader(new FileStream(fileName, FileMode.Open)))
+                    {
+                        byte[] header = new byte[44];
+                        for (int i = 0; i < header.Length; i++)
+                        {
+                            header[i] = reader.ReadByte();
+                        }
+                        int length = 
+                            (((int)header[43])<<24)+
+                            (((int)header[42])<<16)+
+                            (((int)header[41])<<8)+
+                            (int)header[40];
+                        length = length >> 1;
+                        chart1.Series[0].Points.Clear();
+                        var signal = new double[length];
+                        var selectedSettings = settings["wav"];
+                        for (int i = 0; i < length; i++)
+                        {
+                            byte byteOne = reader.ReadByte();
+                            byte byteTwo = reader.ReadByte();
+                            int signalOne = (int)(short)(byteOne | byteTwo<<8);
+                            ///int signalValue = reader.ReadInt16();
+                            signal[i] = signalOne    - selectedSettings.BaseValue;
+                        }
+                        
+                        return (selectedSettings, signal);
+                    }
+                }
+            }
+            return (null, null);
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            (var settings,var signal) = LoadWav();
+            
+            DisplayData(settings,signal,(int)nNumeric.Value);
         }
     }
 }

@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalProcessing", "SignalProcessing\SignalProcessing.csproj", "{C800DFC6-AEC4-4CDE-90FB-6666E2AE6343}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoundCut", "..\SoundCut\SoundCut.csproj", "{F2162758-CE2E-4375-B5CE-7661AA73263A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C800DFC6-AEC4-4CDE-90FB-6666E2AE6343}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C800DFC6-AEC4-4CDE-90FB-6666E2AE6343}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C800DFC6-AEC4-4CDE-90FB-6666E2AE6343}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2162758-CE2E-4375-B5CE-7661AA73263A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2162758-CE2E-4375-B5CE-7661AA73263A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2162758-CE2E-4375-B5CE-7661AA73263A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2162758-CE2E-4375-B5CE-7661AA73263A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
