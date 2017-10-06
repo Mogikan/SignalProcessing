@@ -21,10 +21,10 @@ namespace SignalProcessing
         {
             InitializeComponent();
         }
-       
+
         private class Settings
         {
-            public Settings(double baseValue,double step,double xFrequency,string yLabel)
+            public Settings(double baseValue, double step, double xFrequency, string yLabel)
             {
                 BaseValue = baseValue;
                 Step = step;
@@ -48,7 +48,7 @@ namespace SignalProcessing
             {"sawtooth", new Settings(0,1,360,"") },
             {"triangle", new Settings(0,1,360,"") },
             {"square", new Settings(0,1,360,"") },
-            {"wav",new Settings(1<<15,1,44100,"")},
+            {"wav",new Settings(0,1,44100,"")},
         };
 
         enum Direction
@@ -60,12 +60,12 @@ namespace SignalProcessing
         private Complex[] DFT(Complex[] inputSignal, Direction direction)
         {
             int N = inputSignal.Length;
-            var result = new Complex[inputSignal.Length];            
+            var result = new Complex[inputSignal.Length];
             for (int k = 0; k < N; k++) // итоговые коэффициенты как сумма
             {
                 for (int i = 0; i < N; i++) // внутренний цикл суммирования
-                {                    
-                    result[k] += inputSignal[i] * Complex.FromPolarCoordinates(1,2.0 * Math.PI * k *(int)direction * i / N);                    
+                {
+                    result[k] += inputSignal[i] * Complex.FromPolarCoordinates(1, 2.0 * Math.PI * k * (int)direction * i / N);
                 }
             }
             if (direction == Direction.Forward)
@@ -79,7 +79,7 @@ namespace SignalProcessing
         {
             return (int)Math.Floor(Math.Log(input) / Math.Log(2));
         }
-        private (double[] amplitude,double[] phase) CalculateMetrics(Complex[] signal)
+        private (double[] amplitude, double[] phase) CalculateMetrics(Complex[] signal)
         {
             int N = signal.Length;
             if (ShowHalfSpectre)
@@ -94,12 +94,12 @@ namespace SignalProcessing
                 amplitude[i] = signal[i].Magnitude;
                 phase[i] = signal[i].Phase;
             }
-            return (amplitude,phase);
+            return (amplitude, phase);
         }
 
 
 
-        private (Settings settings,double[] signal) LoadDataFromFile()
+        private (Settings settings, double[] signal) LoadDataFromFile()
         {
             using (var fileDialog = new OpenFileDialog())
             {
@@ -109,14 +109,14 @@ namespace SignalProcessing
                     fileNameLabel.Text = Path.GetFileName(fileName);
                     using (var reader = new StreamReader(new FileStream(fileName, FileMode.Open)))
                     {
-                        chart1.Series[0].Points.Clear();                     
+                        chart1.Series[0].Points.Clear();
                         var stringValues = reader.ReadToEnd()
-                            .Split(new char[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);                        
+                            .Split(new char[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);
                         var fileNameWOExtension = Path.GetFileNameWithoutExtension(fileName);
                         var settingsSelector = Path.GetFileNameWithoutExtension(fileNameWOExtension).Remove(fileNameWOExtension.Length - 2);
                         var selectedSettings = settings[settingsSelector];
-                        var signal = stringValues.Select((stringValue)=> (Convert.ToDouble(stringValue) - selectedSettings.BaseValue) / selectedSettings.Step).ToArray();
-                        return (selectedSettings, signal);                        
+                        var signal = stringValues.Select((stringValue) => (Convert.ToDouble(stringValue) - selectedSettings.BaseValue) / selectedSettings.Step).ToArray();
+                        return (selectedSettings, signal);
                     }
                 }
             }
@@ -125,23 +125,25 @@ namespace SignalProcessing
 
 
         private double[] _signal;
+        private byte[] _header;
+        private string _fileName;
         private Settings _settings;
 
         private void loadDataButton_Click(object sender, EventArgs e)
         {
             (_settings, _signal) = LoadDataFromFile();
-            DisplayData(_settings,_signal);
+            DisplayData(_settings, _signal);
         }
 
-        private void DisplayData(Settings settings,double[] signal,int n=0)
+        private void DisplayData(Settings settings, double[] signal, int n = 0)
         {
             if (signal == null) return;
-            samplesCount.Text = signal.Length.ToString();            
+            samplesCount.Text = signal.Length.ToString();
             chart1.ChartAreas[0].AxisX.Minimum = 0;
             chart1.ChartAreas[0].AxisX.RoundAxisValues();
             chart1.ChartAreas[0].AxisX.Title = "t";
             chart1.ChartAreas[0].AxisY.Title = settings.YLabel;
-            Tuple<double, double>[] result = PrepareSignalPreviewData(signal,settings);
+            Tuple<double, double>[] result = PrepareSignalPreviewData(signal, settings);
             if (n != 0)
             {
                 result.Take(n).ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
@@ -152,18 +154,18 @@ namespace SignalProcessing
             }
         }
 
-        private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal,Settings settings)=>
+        private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal, Settings settings) =>
             signal.Select((s, i) => new Tuple<double, double>(i / settings.XFrequency, s)).ToArray();
 
-        private Tuple<double, double>[] PrepareSignalPreviewData(Complex[] signal,Settings settings) =>
+        private Tuple<double, double>[] PrepareSignalPreviewData(Complex[] signal, Settings settings) =>
             signal.Select((s, i) => new Tuple<double, double>(i / settings.XFrequency, s.Real)).ToArray();
 
 
 
-        private void ShowChart(IEnumerable<Tuple<double, double>> values, string xTitle, string yTitle,string title)
+        private void ShowChart(IEnumerable<Tuple<double, double>> values, string xTitle, string yTitle, string title)
         {
-            ChartForm chart = new ChartForm(values, xTitle, yTitle,title);
-            chart.Show();            
+            ChartForm chart = new ChartForm(values, xTitle, yTitle, title);
+            chart.Show();
         }
 
         private void dftClick(object sender, EventArgs e)
@@ -174,7 +176,7 @@ namespace SignalProcessing
             ApplyTransform(DFT, signalCut, Direction.Forward);
         }
 
-        private void ApplyTransform(Func<Complex[], Direction, Complex[]> transformFunction,double[] signal,Direction direction)
+        private void ApplyTransform(Func<Complex[], Direction, Complex[]> transformFunction, double[] signal, Direction direction)
         {
             var settings = _settings;
             if (signal == null)
@@ -187,7 +189,7 @@ namespace SignalProcessing
                 );
             ShowChart(magnitudePoints, chartXLabel, _settings.YLabel, $"Magnitude {transformFunction.Method.Name}");
             var phasePoints = phase.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / phase.Length, s));
-            ShowChart(phasePoints, chartXLabel, _settings.YLabel, $"Phase {transformFunction.Method.Name}");            
+            ShowChart(phasePoints, chartXLabel, _settings.YLabel, $"Phase {transformFunction.Method.Name}");
         }
 
         private static Complex[] GetComplexData(double[] signal)
@@ -196,13 +198,24 @@ namespace SignalProcessing
         }
 
         private Complex[] FastDFT(Complex[] inputSignal, Direction direction)
-        {            
+        {
+            var N = inputSignal.Length;
+            var C = FastDFTInternal(inputSignal, direction);
+            if (direction == Direction.Inverse)
+            {
+                return C.Select((c) => c / N).ToArray();
+            }
+            return C;
+        }
+
+        private Complex[] FastDFTInternal(Complex[] inputSignal, Direction direction)
+        {
             int N = inputSignal.Length;
             if (N == 1)
                 return inputSignal;
             Complex W = 1;
-            var C0 = FastDFT(inputSignal.Where((s,i)=>i%2==0).ToArray(),direction);    // F0 = [f0,f2,...,fn-2]  // рекурсия
-            var C1 = FastDFT(inputSignal.Where((s,i)=>i%2==1).ToArray(),direction);    //  F1 = [f1,f3,...,fn-1]
+            var C0 = FastDFTInternal(inputSignal.Where((s, i) => i % 2 == 0).ToArray(), direction);    // F0 = [f0,f2,...,fn-2]  // рекурсия
+            var C1 = FastDFTInternal(inputSignal.Where((s, i) => i % 2 == 1).ToArray(), direction);    //  F1 = [f1,f3,...,fn-1]
             var C = new Complex[N];
             for (var k = 0; k < N / 2; k++)
             {
@@ -214,18 +227,13 @@ namespace SignalProcessing
                 C[k] = C0[k] + C1[k];
                 C[k + N / 2] = C0[k] - C1[k];
             }
-            if (direction == Direction.Forward)
-            {
-                return C.Select((c) => c / N).ToArray();
-            }
             return C;
         }
 
         private Complex[] FastDFTN(Complex[] signal, Direction direction)
         {
             int N = signal.Length;
-            int maxPower = 10;// 
-               // FindMaxPower(N);
+            int maxPower = FindMaxPower(N);
             int L = 1 << maxPower;
             int M = N / L;
             N = M * L;
@@ -238,7 +246,7 @@ namespace SignalProcessing
             }
             for (int i = 0; i < M; i++)
             {
-                FastDFTStep(direction,i, M, L,ref calculationSignal); // вызов БПФ для отсчетов шагом M
+                FastDFTStep(direction, i, M, L, ref calculationSignal); // вызов БПФ для отсчетов шагом M
             }
             var result = new Complex[N];
             for (int s = 0; s < M; s++)
@@ -247,11 +255,11 @@ namespace SignalProcessing
                 {
                     for (int m = 0; m < M; m++)
                     {
-                        result[r + s * L] += calculationSignal[m + r * M] * Complex.FromPolarCoordinates(1,(int)direction * 2 * Math.PI * m * (r + s * L) / N);                        
+                        result[r + s * L] += calculationSignal[m + r * M] * Complex.FromPolarCoordinates(1, (int)direction * 2 * Math.PI * m * (r + s * L) / N);
                     }
                 }
-            }            
-            if (direction == Direction.Forward)
+            }
+            if (direction == Direction.Inverse)
             {
                 for (int k = 0; k < N; k++)
                 {
@@ -284,9 +292,9 @@ namespace SignalProcessing
         }
 
 
-        private void FastDFTStep(Direction direction, int Z, int H, int N,ref Complex[] signal)
+        private void FastDFTStep(Direction direction, int Z, int H, int N, ref Complex[] signal)
         { // БПФ с шагом H от отсчета Z
-            int M = (int)Math.Log(N,2);
+            int M = (int)Math.Log(N, 2);
             for (int i = 0; i < N; i++)
             {
                 int k = ReverseIndex(i, M);
@@ -296,16 +304,16 @@ namespace SignalProcessing
                 {
                     Complex temp = signal[p];
                     signal[p] = signal[q];
-                    signal[q] = temp;                    
+                    signal[q] = temp;
                 }
             }
             for (int s = 1; s <= M; s++)
             {
-                int m = 1<<s;                
+                int m = 1 << s;
                 var Wm = Complex.FromPolarCoordinates(1, 2 * Math.PI * (int)direction / m);
                 for (int k = 0; k < N; k += m)
                 {
-                    Complex W = new Complex(1,0);
+                    Complex W = new Complex(1, 0);
                     for (int j = 0; j <= m / 2 - 1; j++)
                     {
                         int p = k + j + m / 2;
@@ -317,7 +325,7 @@ namespace SignalProcessing
                         signal[q] = t + u;
                         signal[p] = u - t;
                         //W = W * Wm;
-                        W = W*Wm;                        
+                        W = W * Wm;
                     }
                 }
             }
@@ -329,16 +337,16 @@ namespace SignalProcessing
             var inputSignal = _signal;
             int maxPower = FindMaxPower(inputSignal.Length);
             var signalCut = inputSignal.Take(1 << maxPower).ToArray();
-            Stopwatch timeChecker = new Stopwatch();
-            timeChecker.Start();
-            ApplyTransform(DFT,signalCut,Direction.Forward);
-            timeChecker.Stop();
-            long time1 = timeChecker.ElapsedMilliseconds;
-            timeChecker.Restart();
-            ApplyTransform(FastDFT,signalCut,Direction.Forward);
-            timeChecker.Stop();
-            var time2 = timeChecker.ElapsedMilliseconds;
-            MessageBox.Show($"DFT time {time1},{Environment.NewLine}FastDFT time {time2}");
+            //Stopwatch timeChecker = new Stopwatch();
+            //timeChecker.Start();
+            //ApplyTransform(DFT,signalCut,Direction.Forward);
+            //timeChecker.Stop();
+            //long time1 = timeChecker.ElapsedMilliseconds;
+            //timeChecker.Restart();
+            ApplyTransform(FastDFT, signalCut, Direction.Forward);
+            //timeChecker.Stop();
+            //var time2 = timeChecker.ElapsedMilliseconds;
+            //MessageBox.Show($"DFT time {time1},{Environment.NewLine}FastDFT time {time2}");
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -346,7 +354,7 @@ namespace SignalProcessing
             Stopwatch timeChecker = new Stopwatch();
             timeChecker.Start();
 
-            ApplyTransform(FastDFTN, _signal,Direction.Forward);
+            ApplyTransform(FastDFTN, _signal, Direction.Forward);
             timeChecker.Stop();
             long time1 = timeChecker.ElapsedMilliseconds;
             timeChecker.Restart();
@@ -364,9 +372,9 @@ namespace SignalProcessing
             {
                 filteredGarmonics[i] = transformedSignal[i];
                 filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
-            }            
+            }
             var backSignal = DFT(filteredGarmonics, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "5 Гармоник");
+            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "5 Гармоник");
 
 
             filteredGarmonics = new Complex[transformedSignal.Length];
@@ -376,33 +384,36 @@ namespace SignalProcessing
                 filteredGarmonics[transformedSignal.Length - 1 - i] = transformedSignal[transformedSignal.Length - 1 - i];
             }
             backSignal = DFT(filteredGarmonics, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "30 Гармоник");
+            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "30 Гармоник");
 
         }
 
-        private Complex[] LowFrequenciesFilter(Complex[] signal, int lowThresholdIndex)
+        private Complex[] LowFrequenciesFilter(Complex[] signal, double lowThreshold, Settings settings)
         {
-            for (int i = lowThresholdIndex+1; i<signal.Length-lowThresholdIndex; i++)
+
+            int lowThresholdIndex = (int)Math.Floor(1.0 * lowThreshold * signal.Length / settings.XFrequency);
+            for (int i = lowThresholdIndex + 1; i < signal.Length - lowThresholdIndex; i++)
             {
                 signal[i] = 0;
             }
             return signal;
         }
 
-        private Complex[] HighFrequenciesFilter(Complex[] signal, int highThresholdIndex)
+        private Complex[] HighFrequenciesFilter(Complex[] signal, double highThreshold, Settings settings)
         {
+            int highThresholdIndex = (int)Math.Floor(1.0 * highThreshold * signal.Length / settings.XFrequency);
             for (int i = 0; i < highThresholdIndex; i++)
             {
                 signal[i] = 0;
             }
-            for (int i = signal.Length - highThresholdIndex ; i < signal.Length; i++)
+            for (int i = signal.Length - highThresholdIndex; i < signal.Length; i++)
             {
                 signal[i] = 0;
             }
             return signal;
         }
 
-        private Complex[] RejectorFilter(Complex[] signal,int low, int high)
+        private Complex[] RejectorFilter(Complex[] signal, int low, int high)
         {
             for (int i = low; i < high; i++)
             {
@@ -428,31 +439,53 @@ namespace SignalProcessing
         {
             if (lowRadio.Checked)
             {
-                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);                
-                var backSignal = DFT(LowFrequenciesFilter(transformedSignal,(int)numericUpDown1.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Low frequencies filter");
+                var transformedSignal = FastDFTN(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFTN(LowFrequenciesFilter(transformedSignal, (double)numericUpDown1.Value, _settings), Direction.Inverse);
+                SaveWav(backSignal.Select((x)=>x.Real).ToArray(), _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
             }
             if (highRadio.Checked)
             {
-                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = DFT(HighFrequenciesFilter(transformedSignal, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "High frequencies filter");
+                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFT(HighFrequenciesFilter(transformedSignal, (double)numericUpDown2.Value, _settings), Direction.Inverse);
+                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "High frequencies filter");
             }
             if (stripeRadio.Checked)
             {
-                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = DFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value,(int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Stripe frequencies filter");
+                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Stripe frequencies filter");
             }
             if (rejectorRadio.Checked)
             {
-                var transformedSignal = DFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = DFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal,_settings), "", _settings.YLabel, "Rejector frequencies filter");
+                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Rejector frequencies filter");
             }
         }
 
-        private (Settings settings,double[] signal) LoadWav()
+        private void SaveWav(double[] backSignal, byte[] header, Settings settings, string fileName, string fileSuffix)
+        {
+            var fileNameWOExtention = Path.GetFileNameWithoutExtension(fileName);
+            var ext = Path.GetExtension(fileName);
+            var resultFileName = $"{Path.GetDirectoryName(fileName)}\\{fileNameWOExtention}{fileSuffix}{ext}";
+            using (BinaryWriter writer = new BinaryWriter(new FileStream(resultFileName, FileMode.Create)))
+            {
+                writer.Write(header);
+                for (int i = 0; i < backSignal.Length; i++)
+                {
+                    short signalValue = (short)backSignal[i];
+                    writer.Write(signalValue);
+                    //byte byte1 = (byte)(signalValue & 0xFF);
+                    //byte byte2 = (byte)((signalValue>>8) & 0xFF);
+                    //writer.Write(byte1);
+                    //writer.Write(byte2);
+                }
+            }
+        }
+
+        private (Settings settings, double[] signal, byte[] header, string fileName) LoadWav()
         {
             using (var fileDialog = new OpenFileDialog())
             {
@@ -463,14 +496,11 @@ namespace SignalProcessing
                     using (var reader = new BinaryReader(new FileStream(fileName, FileMode.Open)))
                     {
                         byte[] header = new byte[44];
-                        for (int i = 0; i < header.Length; i++)
-                        {
-                            header[i] = reader.ReadByte();
-                        }
-                        int length = 
-                            (((int)header[43])<<24)+
-                            (((int)header[42])<<16)+
-                            (((int)header[41])<<8)+
+                        reader.Read(header, 0, 44);
+                        int length =
+                            (((int)header[43]) << 24) +
+                            (((int)header[42]) << 16) +
+                            (((int)header[41]) << 8) +
                             (int)header[40];
                         length = length >> 1;
                         chart1.Series[0].Points.Clear();
@@ -480,23 +510,136 @@ namespace SignalProcessing
                         {
                             byte byteOne = reader.ReadByte();
                             byte byteTwo = reader.ReadByte();
-                            int signalOne = (int)(short)(byteOne | byteTwo<<8);
-                            ///int signalValue = reader.ReadInt16();
-                            signal[i] = signalOne    - selectedSettings.BaseValue;
+                            int signalOne = (int)(short)(byteOne | byteTwo << 8);
+                            //int signalValue = reader.ReadInt16();
+                            signal[i] = signalOne - selectedSettings.BaseValue;
                         }
-                        
-                        return (selectedSettings, signal);
+
+                        return (selectedSettings, signal, header, fileName);
                     }
                 }
             }
-            return (null, null);
+            return (null, null, null, null);
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-            (var settings,var signal) = LoadWav();
-            
-            DisplayData(settings,signal,(int)nNumeric.Value);
+            (_settings, _signal, _header, _fileName) = LoadWav();
+            DisplayData(_settings, _signal, (int)nNumeric.Value);
+        }
+
+        enum WeightType
+        {
+            Rectangular,
+            Hamming,
+            Bartlet,
+            Hanning,
+            BlackMan
+        }
+
+        Dictionary<WeightType, Func<double,int, double>> WeightFunctions = new Dictionary<WeightType, Func<double,int, double>>()
+        {
+            { WeightType.Rectangular, (i,N)=>1 },
+            { WeightType.Hamming, (i,N)=> 0.54-0.46*Math.Cos(2*Math.PI*i/(N-1))},
+            { WeightType.Bartlet, (i,N)=>1-(2*(i-(N-1)/2.0))/(N-1)},
+            { WeightType.Hanning, (i,N)=>0.5-0.5*Math.Cos(2*Math.PI*i/(N-1)) },
+            { WeightType.BlackMan, (i,N)=>0.42-0.5*Math.Cos(2*Math.PI*i/(N-1))+0.08*Math.Cos(4*Math.PI*i/(N-1)) }
+        };
+
+        double[] GenerateWeights(WeightType weightType,int N)
+        {
+            return Enumerable.Range(0, N).Select((x) => WeightFunctions[weightType](x,N)).ToArray();
+        }
+
+        enum FilterType
+        {
+            High,
+            Low
+        }
+
+        double[] GenerateH(int N,double cutFrequency,FilterType filterType)
+        {
+            int M = N - 1;
+            int sign = filterType == FilterType.Low ? 1 : -1;
+            var centerH = filterType == FilterType.Low ? 2* cutFrequency : 1-2* cutFrequency;
+            return Enumerable.Range(0, N).Select((i) =>
+            (i == M / 2)? centerH :
+            sign*Math.Sin(2 * Math.PI * cutFrequency * (i - M>>1)) 
+            / (Math.PI*(i - M>>1)))
+            .ToArray();            
+        }
+
+        double[] ApplyFilter(double[] signal, double cutFrequency, int N,WeightType weightType,FilterType filterType)
+        {
+            var result = new double[signal.Length];
+            var w = GenerateWeights(weightType, N);
+            var h = GenerateH(N,cutFrequency,filterType);
+            for (int k = 0; k < signal.Length; k++)
+            {
+                int windowN = N;
+                if (k + 1 < N)
+                {
+                    windowN = k + 1;
+                }
+                for (int m = 0; m < windowN; m++)
+                {
+                    result[k] += w[m] * signal[k-m] * h[m];
+                }                
+            }
+            return result;
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            (_settings,_signal) = LoadDataFromFile();
+            var fdft = FastDFT(GetComplexData(_signal), Direction.Forward);
+            var backSignal = FastDFT(fdft, Direction.Inverse);
+            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "test");
+        }
+
+        double CalculateFc(double x, Settings settings) => x / settings.XFrequency / 2;
+        
+
+        private void buttonWFilter_Click_1(object sender, EventArgs e)
+        {
+            if (lowRadio.Checked)
+            {
+
+                var backSignal =
+                    ApplyFilter(
+                        _signal,
+                        CalculateFc((double)numericUpDown1.Value, _settings),
+                        (int)nNumeric.Value,
+                        GetWeightType(),
+                        FilterType.Low);                    
+                SaveWav(backSignal, _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
+            }
+            if (highRadio.Checked)
+            {
+                var backSignal =
+                    ApplyFilter(
+                        _signal,
+                        CalculateFc((double)numericUpDown2.Value, _settings),
+                        (int)nNumeric.Value,
+                        GetWeightType(),
+                        FilterType.High);                    
+                SaveWav(backSignal, _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "High frequencies filter");
+            }
+        }
+
+        private WeightType GetWeightType()
+        {
+            if (blackmanRadio.Checked)
+                return WeightType.BlackMan;
+            if (hammingRadio.Checked)
+                return WeightType.Hamming;
+            if (hanningRadio.Checked)
+                return WeightType.Hanning;
+            if (bartletRadio.Checked)
+                return WeightType.Bartlet;
+            return WeightType.Rectangular;
         }
     }
 }
