@@ -45,7 +45,7 @@
             series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
             series1.Name = "Series1";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(1518, 600);
+            this.chart1.Size = new System.Drawing.Size(1197, 600);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 
@@ -53,7 +53,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1518, 600);
+            this.ClientSize = new System.Drawing.Size(1197, 600);
             this.Controls.Add(this.chart1);
             this.Name = "ChartForm";
             this.Text = "ChartForm";

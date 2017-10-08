@@ -50,11 +50,12 @@
             this.button4 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.blackmanRadio = new System.Windows.Forms.RadioButton();
             this.hanningRadio = new System.Windows.Forms.RadioButton();
             this.bartletRadio = new System.Windows.Forms.RadioButton();
             this.hammingRadio = new System.Windows.Forms.RadioButton();
             this.rectRadio = new System.Windows.Forms.RadioButton();
-            this.blackmanRadio = new System.Windows.Forms.RadioButton();
+            this.button2 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -66,7 +67,7 @@
             // fDftButton
             // 
             this.fDftButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.fDftButton.Location = new System.Drawing.Point(1314, 76);
+            this.fDftButton.Location = new System.Drawing.Point(1037, 76);
             this.fDftButton.Name = "fDftButton";
             this.fDftButton.Size = new System.Drawing.Size(75, 23);
             this.fDftButton.TabIndex = 3;
@@ -90,14 +91,14 @@
             series1.Legend = "Legend1";
             series1.Name = "Src";
             this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(1298, 575);
+            this.chart1.Size = new System.Drawing.Size(1021, 575);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             // 
             // button3
             // 
             this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(1313, 214);
+            this.button3.Location = new System.Drawing.Point(1036, 214);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(76, 22);
             this.button3.TabIndex = 6;
@@ -112,7 +113,7 @@
             this.groupBox1.Controls.Add(this.stripeRadio);
             this.groupBox1.Controls.Add(this.highRadio);
             this.groupBox1.Controls.Add(this.lowRadio);
-            this.groupBox1.Location = new System.Drawing.Point(1319, 105);
+            this.groupBox1.Location = new System.Drawing.Point(1042, 105);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(76, 109);
             this.groupBox1.TabIndex = 7;
@@ -168,7 +169,7 @@
             // numericUpDown1
             // 
             this.numericUpDown1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown1.Location = new System.Drawing.Point(1315, 265);
+            this.numericUpDown1.Location = new System.Drawing.Point(1038, 265);
             this.numericUpDown1.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -182,7 +183,7 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(1312, 246);
+            this.label4.Location = new System.Drawing.Point(1035, 246);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(23, 13);
             this.label4.TabIndex = 9;
@@ -191,7 +192,7 @@
             // numericUpDown2
             // 
             this.numericUpDown2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown2.Location = new System.Drawing.Point(1315, 312);
+            this.numericUpDown2.Location = new System.Drawing.Point(1038, 312);
             this.numericUpDown2.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -205,7 +206,7 @@
             // 
             this.label2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(1313, 337);
+            this.label2.Location = new System.Drawing.Point(1036, 337);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(13, 13);
             this.label2.TabIndex = 9;
@@ -215,7 +216,7 @@
             // 
             this.samplesCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.samplesCount.AutoSize = true;
-            this.samplesCount.Location = new System.Drawing.Point(1316, 60);
+            this.samplesCount.Location = new System.Drawing.Point(1039, 60);
             this.samplesCount.Name = "samplesCount";
             this.samplesCount.Size = new System.Drawing.Size(31, 13);
             this.samplesCount.TabIndex = 10;
@@ -225,7 +226,7 @@
             // 
             this.fileNameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.fileNameLabel.AutoSize = true;
-            this.fileNameLabel.Location = new System.Drawing.Point(1316, 38);
+            this.fileNameLabel.Location = new System.Drawing.Point(1039, 38);
             this.fileNameLabel.Name = "fileNameLabel";
             this.fileNameLabel.Size = new System.Drawing.Size(51, 13);
             this.fileNameLabel.TabIndex = 10;
@@ -234,7 +235,7 @@
             // nNumeric
             // 
             this.nNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nNumeric.Location = new System.Drawing.Point(1316, 358);
+            this.nNumeric.Location = new System.Drawing.Point(1039, 358);
             this.nNumeric.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -248,7 +249,7 @@
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(1313, 296);
+            this.label1.Location = new System.Drawing.Point(1036, 296);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(27, 13);
             this.label1.TabIndex = 9;
@@ -257,7 +258,7 @@
             // button4
             // 
             this.button4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button4.Location = new System.Drawing.Point(1315, 12);
+            this.button4.Location = new System.Drawing.Point(1038, 12);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(75, 23);
             this.button4.TabIndex = 11;
@@ -267,7 +268,8 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(1315, 526);
+            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.button1.Location = new System.Drawing.Point(1041, 526);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 12;
@@ -283,12 +285,23 @@
             this.groupBox2.Controls.Add(this.bartletRadio);
             this.groupBox2.Controls.Add(this.hammingRadio);
             this.groupBox2.Controls.Add(this.rectRadio);
-            this.groupBox2.Location = new System.Drawing.Point(1316, 384);
+            this.groupBox2.Location = new System.Drawing.Point(1039, 384);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(76, 136);
             this.groupBox2.TabIndex = 8;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "weights";
+            // 
+            // blackmanRadio
+            // 
+            this.blackmanRadio.AutoSize = true;
+            this.blackmanRadio.Location = new System.Drawing.Point(2, 112);
+            this.blackmanRadio.Name = "blackmanRadio";
+            this.blackmanRadio.Size = new System.Drawing.Size(71, 17);
+            this.blackmanRadio.TabIndex = 0;
+            this.blackmanRadio.TabStop = true;
+            this.blackmanRadio.Text = "blackman";
+            this.blackmanRadio.UseVisualStyleBackColor = true;
             // 
             // hanningRadio
             // 
@@ -334,22 +347,22 @@
             this.rectRadio.Text = "rect";
             this.rectRadio.UseVisualStyleBackColor = true;
             // 
-            // blackmanRadio
+            // button2
             // 
-            this.blackmanRadio.AutoSize = true;
-            this.blackmanRadio.Location = new System.Drawing.Point(2, 112);
-            this.blackmanRadio.Name = "blackmanRadio";
-            this.blackmanRadio.Size = new System.Drawing.Size(71, 17);
-            this.blackmanRadio.TabIndex = 0;
-            this.blackmanRadio.TabStop = true;
-            this.blackmanRadio.Text = "blackman";
-            this.blackmanRadio.UseVisualStyleBackColor = true;
+            this.button2.Location = new System.Drawing.Point(1041, 555);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(75, 23);
+            this.button2.TabIndex = 13;
+            this.button2.Text = "f charact.";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_1);
             // 
             // SignalForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1402, 599);
+            this.ClientSize = new System.Drawing.Size(1125, 599);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button4);
@@ -405,5 +418,6 @@
         private System.Windows.Forms.RadioButton hammingRadio;
         private System.Windows.Forms.RadioButton rectRadio;
         private System.Windows.Forms.RadioButton blackmanRadio;
+        private System.Windows.Forms.Button button2;
     }
 }

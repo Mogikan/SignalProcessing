@@ -144,14 +144,14 @@ namespace SignalProcessing
             chart1.ChartAreas[0].AxisX.Title = "t";
             chart1.ChartAreas[0].AxisY.Title = settings.YLabel;
             Tuple<double, double>[] result = PrepareSignalPreviewData(signal, settings);
-            if (n != 0)
-            {
-                result.Take(n).ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
-            }
-            else
-            {
+            //if (n != 0)
+            //{
+            //    result.Take(n).ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
+            //}
+            //else
+            //{
                 result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
-            }
+            //}
         }
 
         private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal, Settings settings) =>
@@ -541,7 +541,7 @@ namespace SignalProcessing
         {
             { WeightType.Rectangular, (i,N)=>1 },
             { WeightType.Hamming, (i,N)=> 0.54-0.46*Math.Cos(2*Math.PI*i/(N-1))},
-            { WeightType.Bartlet, (i,N)=>1-(2*(i-(N-1)/2.0))/(N-1)},
+            { WeightType.Bartlet, (i,N)=>1-(2*Math.Abs(i-(N-1)/2.0))/(N-1)},
             { WeightType.Hanning, (i,N)=>0.5-0.5*Math.Cos(2*Math.PI*i/(N-1)) },
             { WeightType.BlackMan, (i,N)=>0.42-0.5*Math.Cos(2*Math.PI*i/(N-1))+0.08*Math.Cos(4*Math.PI*i/(N-1)) }
         };
@@ -562,11 +562,12 @@ namespace SignalProcessing
             int M = N - 1;
             int sign = filterType == FilterType.Low ? 1 : -1;
             var centerH = filterType == FilterType.Low ? 2* cutFrequency : 1-2* cutFrequency;
-            return Enumerable.Range(0, N).Select((i) =>
-            (i == M / 2)? centerH :
-            sign*Math.Sin(2 * Math.PI * cutFrequency * (i - M>>1)) 
-            / (Math.PI*(i - M>>1)))
-            .ToArray();            
+            return Enumerable.Range(0, N).Select(
+                (i) =>
+                (i == (M >> 1))? centerH :
+                sign*Math.Sin(2 * Math.PI * cutFrequency * (i - (M>>1))) 
+                / (Math.PI*(i - (M>>1))))
+                .ToArray();            
         }
 
         double[] ApplyFilter(double[] signal, double cutFrequency, int N,WeightType weightType,FilterType filterType)
@@ -640,6 +641,64 @@ namespace SignalProcessing
             if (bartletRadio.Checked)
                 return WeightType.Bartlet;
             return WeightType.Rectangular;
+        }
+
+        private void button2_Click_1(object sender, EventArgs e)
+        {
+            _settings = settings["wav"];
+            double[] fCharacteristicsSignal = new double[1<<10];
+            double[] resultSignal = new double[fCharacteristicsSignal.Length];
+            fCharacteristicsSignal[0] = 1;
+            int N = (int)nNumeric.Value;
+            if (lowRadio.Checked)
+            {
+
+                resultSignal =
+                    ApplyFilter(
+                        fCharacteristicsSignal,
+                        CalculateFc((double)numericUpDown1.Value, _settings),
+                        N,
+                        GetWeightType(),
+                        FilterType.Low);
+                //var w = GenerateWeights(GetWeightType(), (int)nNumeric.Value);
+                //ShowChart(w.Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), $"", "", $"{ GetWeightType()}");
+                ShowChart(resultSignal.Take(N).Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), "", "", "Frequency characteristic low filter");
+            }
+            if (highRadio.Checked)
+            {
+                resultSignal =
+                    ApplyFilter(
+                        fCharacteristicsSignal,
+                        CalculateFc((double)numericUpDown2.Value, _settings),
+                        N,
+                        GetWeightType(),
+                        FilterType.High);
+                //var w = GenerateWeights(GetWeightType(), (int)nNumeric.Value);
+                //ShowChart(w.Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), $"", "", $"{ GetWeightType()}");
+                ShowChart(resultSignal.Take(N).Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), "", "", "Frequency characteristic high filter");
+            }
+
+            ApplyTransformWithLogChart(FastDFT, resultSignal, Direction.Forward);
+
+        }
+
+        private void ApplyTransformWithLogChart(Func<Complex[], Direction, Complex[]> transformFunction, double[] signal, Direction direction)
+        {
+            var settings = _settings;
+            if (signal == null)
+                return;
+            var chartXLabel = "Гц";
+            var result = transformFunction(GetComplexData(signal), direction);
+            (double[] amp, double[] phase) = CalculateMetrics(result);
+            var magnitudePoints = amp.Select(
+                (a, i) => new Tuple<double, double>(1.0 * i * settings.XFrequency / amp.Length, amp[i])
+                );
+            ShowChart(magnitudePoints, chartXLabel, _settings.YLabel, $"Magnitude {transformFunction.Method.Name}");
+            ShowChart(magnitudePoints.Select((p)=>new Tuple<double,double>(p.Item1,20*Math.Log10(p.Item2))).ToArray()
+                , chartXLabel, _settings.YLabel, $"Log Magnitude {transformFunction.Method.Name}");
+
+            var phasePoints = phase.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / phase.Length, s));
+            ShowChart(phasePoints, chartXLabel, _settings.YLabel, $"Phase {transformFunction.Method.Name}");
         }
     }
 }
