@@ -26,6 +26,10 @@ namespace SignalProcessing
             {
                 chart1.Series[0].LegendText = legendText;
             }
+            else
+            {
+                chart1.Legends.Clear();
+            }
         }
 
         public void AddSeriresData(IEnumerable<Tuple<double, double>> values, string legendText)

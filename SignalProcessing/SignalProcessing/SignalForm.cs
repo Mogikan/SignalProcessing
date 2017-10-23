@@ -609,13 +609,13 @@ namespace SignalProcessing
 
         private WeightType GetWeightType()
         {
-            return WeightType.Rectangular;
+            //return WeightType.Rectangular;
             //if (blackmanRadio.Checked)
             //    return WeightType.BlackMan;
             //if (hammingRadio.Checked)
             //    return WeightType.Hamming;
             //if (hanningRadio.Checked)
-            //    return WeightType.Hanning;
+                return WeightType.Hanning;
             //if (bartletRadio.Checked)
             //    return WeightType.Bartlet;
             //return WeightType.Rectangular;
@@ -766,11 +766,11 @@ namespace SignalProcessing
         }
 
 
-        private (List<Tuple<double, double>> afc, List<Tuple<double, double>> ffc) CalculateChebyshev1HAFC(int n, double e)
+        private (List<Tuple<double, double>> afc, List<Tuple<double, double>> ffc) CalculateChebyshev1KwFC(int n, double e)
         {
 
             var result = Enumerable.Range(0, F / 2).Select(
-                (i) => new Tuple<double, Complex>(i * step, Chebyshev1H(new Complex(0, i * step), n, e))
+                (i) => new Tuple<double, Complex>(i * step, Chebyshev1Kw(new Complex(0, i * step), n, e))
                 ).ToList();
 
             var afcval = result.Select(p => new Tuple<double, double>(p.Item1, p.Item2.Magnitude));
@@ -795,7 +795,7 @@ namespace SignalProcessing
             return result;
         }
 
-        private Complex Chebyshev1H(Complex s, int n, double e)
+        private Complex Chebyshev1Kw(Complex s, int n, double e)
         {
             double arsh(double x) => Math.Log(x + Math.Sqrt(x * x + 1));
             double betta = arsh(1.0 / e) / n;
@@ -815,35 +815,35 @@ namespace SignalProcessing
             return mul * Gp * C;
         }
 
-        private void ShowButterworthHAFC()
+        private void ShowButterworthKwFC()
         {
             var butterworth5 = CalculateBatterworth(5);
             var butterworth8 = CalculateBatterworth(8);
             var butterworth11 = CalculateBatterworth(11);
-            ChartForm afcf = new ChartForm(butterworth5.afc, "w", "", "Butterworth H AFC", "N=5");
+            ChartForm afcf = new ChartForm(butterworth5.afc, "w", "", "Butterworth K(w) AFC", "N=5");
             afcf.AddSeriresData(butterworth8.afc, "N=8");
             afcf.AddSeriresData(butterworth11.afc, "N=11");
             afcf.Show();
 
 
-            ChartForm ffcf = new ChartForm(butterworth5.ffc, "w", "", "Butterworth H PCF", "N=5");
+            ChartForm ffcf = new ChartForm(butterworth5.ffc, "w", "", "Butterworth K(w) PFC", "N=5");
             ffcf.AddSeriresData(butterworth8.ffc, "N=8");
             ffcf.AddSeriresData(butterworth11.ffc, "N=11");
             ffcf.Show();
         }
 
-        private void ShowChebyshev1HAFC()
+        private void ShowChebyshev1KwFC()
         {
-            var chebyshev1_5 = CalculateChebyshev1HAFC(5, 0.5);
-            var chebyshev1_8 = CalculateChebyshev1HAFC(8, 0.5);
-            var chebyshev1_11 = CalculateChebyshev1HAFC(11, 0.2);
+            var chebyshev1_5 = CalculateChebyshev1KwFC(5, 0.5);
+            var chebyshev1_8 = CalculateChebyshev1KwFC(8, 0.5);
+            var chebyshev1_11 = CalculateChebyshev1KwFC(30, 0.2);
 
-            ChartForm afcf = new ChartForm(chebyshev1_5.afc, "w", "", "Chebyshev1 H AFC", "N=5 E=0.5");
+            ChartForm afcf = new ChartForm(chebyshev1_5.afc, "w", "", "Chebyshev1 K(w) AFC", "N=5 E=0.5");
             afcf.AddSeriresData(chebyshev1_8.afc, "N=8 E=0.5");
             afcf.AddSeriresData(chebyshev1_11.afc, "N=11 E=0.2");
             afcf.Show();
 
-            ChartForm ffcf = new ChartForm(chebyshev1_5.ffc, "w", "", "Chebyshev1 H PCF", "N=5 E=0.5");
+            ChartForm ffcf = new ChartForm(chebyshev1_5.ffc, "w", "", "Chebyshev1 K(w) PFC", "N=5 E=0.5");
             ffcf.AddSeriresData(chebyshev1_8.ffc, "N=8 E=0.5");
             ffcf.AddSeriresData(chebyshev1_11.ffc, "N=11 E=0.2");
             ffcf.Show();
@@ -853,11 +853,11 @@ namespace SignalProcessing
         {
             if (radioButterworth.Checked)
             {
-                ShowChebyshev1HAFC();
+                ShowButterworthKwFC();
             }
             if (radioChebyshev1.Checked)
             {
-                ShowChebyshev1HAFC();
+                ShowChebyshev1KwFC();
             }
         }
 
@@ -1019,7 +1019,7 @@ namespace SignalProcessing
                         (int)nNumeric.Value,
                         FilterType.Low);
                 SaveWav(backSignal, _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "Low frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "Chebyshev1 Low frequencies filter");
             }
             if (highRadio.Checked)
             {
@@ -1030,7 +1030,74 @@ namespace SignalProcessing
                         (int)nNumeric.Value,
                         FilterType.High);
                 SaveWav(backSignal, _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "High frequencies filter");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "Chebyshev1 High frequencies filter");
+            }
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            if (lowRadio.Checked)
+            {
+                var backSignal =
+                    ApplyChebyshev1Filter(
+                        _signal,
+                        CalculateFc((double)numericUpDown1.Value, _settings),
+                        (int)polesNumeric.Value*2,
+                        FilterType.Low);
+                SaveWav(backSignal, _header, _settings, _fileName, $"lowCheb{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, $"Chebyshev1 Poles={polesNumeric.Value} High frequencies filter {numericUpDown1.Value}Hz");
+            }
+            if (highRadio.Checked)
+            {
+                var backSignal =
+                    ApplyChebyshev1Filter(
+                        _signal,
+                        CalculateFc((double)numericUpDown2.Value, _settings),
+                        (int)polesNumeric.Value*2,
+                        FilterType.High);
+                SaveWav(backSignal, _header, _settings, _fileName, $"highCheb{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, $"Chebyshev1 Poles={polesNumeric.Value} High frequencies filter {numericUpDown2.Value}Hz");
+            }
+
+            if (lowRadio.Checked)
+            {
+
+                var backSignal =
+                    ApplyFilter(
+                        _signal,
+                        CalculateFc((double)numericUpDown1.Value, _settings),
+                        (int)nNumeric.Value,
+                        GetWeightType(),
+                        FilterType.Low);
+                SaveWav(backSignal, _header, _settings, _fileName, $"lowWindow{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, $"Hanning {nNumeric.Value} High frequencies filter {numericUpDown1.Value}Hz");
+            }
+            if (highRadio.Checked)
+            {
+                var backSignal =
+                    ApplyFilter(
+                        _signal,
+                        CalculateFc((double)numericUpDown2.Value, _settings),
+                        (int)nNumeric.Value,
+                        GetWeightType(),
+                        FilterType.High);
+                SaveWav(backSignal, _header, _settings, _fileName, $"highWindow{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, $"Hanning {nNumeric.Value} High frequencies filter {numericUpDown2.Value}Hz");
+            }
+
+            if (lowRadio.Checked)
+            {
+                var transformedSignal = FastDFTN(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFTN(LowFrequenciesFilter(transformedSignal, (double)numericUpDown1.Value, _settings), Direction.Inverse);
+                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"lowDFT{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, $"DFT Low frequencies filter {numericUpDown1.Value}Hz");
+            }
+            if (highRadio.Checked)
+            {
+                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                var backSignal = FastDFT(HighFrequenciesFilter(transformedSignal, (double)numericUpDown2.Value, _settings), Direction.Inverse);
+                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"highDFT{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, $"DFT High frequencies filter {numericUpDown2.Value}Hz");
             }
         }
     }
