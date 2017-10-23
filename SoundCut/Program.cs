@@ -11,7 +11,7 @@ namespace SoundCut
     {
         static void Main(string[] args)
         {
-            string filename = "song";
+            string filename = "orch";
             byte[] head = new byte[44];
             using (var reader = new BinaryReader(new FileStream($@"..\..\..\..\{filename}.wav", FileMode.Open)))
             {

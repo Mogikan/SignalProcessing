@@ -13,7 +13,7 @@ namespace SignalProcessing
 {
     public partial class ChartForm : Form
     {
-        public ChartForm(IEnumerable<Tuple<double,double>> values,string xTitle,string yTitle,string title)
+        public ChartForm(IEnumerable<Tuple<double,double>> values,string xTitle,string yTitle,string title,string legendText = "")
         {
             InitializeComponent();
             this.Text = title;
@@ -22,6 +22,18 @@ namespace SignalProcessing
             chart1.ChartAreas[0].AxisX.Title = xTitle;
             chart1.ChartAreas[0].AxisY.Title = yTitle;
             values.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
+            if (!string.IsNullOrEmpty(legendText))
+            {
+                chart1.Series[0].LegendText = legendText;
+            }
+        }
+
+        public void AddSeriresData(IEnumerable<Tuple<double, double>> values, string legendText)
+        {
+            chart1.Series.Add("Series" + (chart1.Series.Count + 1).ToString());
+            chart1.Series[chart1.Series.Count - 1].ChartType = SeriesChartType.Line;
+            chart1.Series[chart1.Series.Count - 1].LegendText = legendText;
+            values.ForEach((point) => chart1.Series[chart1.Series.Count - 1].Points.Add(new DataPoint(point.Item1, point.Item2)));
         }
     }
 }

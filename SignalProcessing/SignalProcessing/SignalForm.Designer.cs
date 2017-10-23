@@ -28,10 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            this.fDftButton = new System.Windows.Forms.Button();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.button3 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -48,14 +47,13 @@
             this.nNumeric = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
-            this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.blackmanRadio = new System.Windows.Forms.RadioButton();
-            this.hanningRadio = new System.Windows.Forms.RadioButton();
-            this.bartletRadio = new System.Windows.Forms.RadioButton();
-            this.hammingRadio = new System.Windows.Forms.RadioButton();
-            this.rectRadio = new System.Windows.Forms.RadioButton();
             this.button2 = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.radioButterworth = new System.Windows.Forms.RadioButton();
+            this.radioChebyshev1 = new System.Windows.Forms.RadioButton();
+            this.radioChebyshev2 = new System.Windows.Forms.RadioButton();
+            this.button1 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -64,33 +62,22 @@
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
             // 
-            // fDftButton
-            // 
-            this.fDftButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.fDftButton.Location = new System.Drawing.Point(1037, 76);
-            this.fDftButton.Name = "fDftButton";
-            this.fDftButton.Size = new System.Drawing.Size(75, 23);
-            this.fDftButton.TabIndex = 3;
-            this.fDftButton.Text = "FastDFT";
-            this.fDftButton.UseVisualStyleBackColor = true;
-            this.fDftButton.Click += new System.EventHandler(this.fdftClick);
-            // 
             // chart1
             // 
             this.chart1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chart1.Legends.Add(legend1);
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
             this.chart1.Location = new System.Drawing.Point(12, 12);
             this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series1.Legend = "Legend1";
-            series1.Name = "Src";
-            this.chart1.Series.Add(series1);
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series5.Legend = "Legend1";
+            series5.Name = "Src";
+            this.chart1.Series.Add(series5);
             this.chart1.Size = new System.Drawing.Size(1021, 575);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
@@ -266,105 +253,90 @@
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
-            // button1
+            // button2
             // 
-            this.button1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button1.Location = new System.Drawing.Point(1041, 526);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 12;
-            this.button1.Text = "W Filter";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.buttonWFilter_Click_1);
+            this.button2.Location = new System.Drawing.Point(1037, 490);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(88, 23);
+            this.button2.TabIndex = 13;
+            this.button2.Text = "AFC";
+            this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button2_Click_2);
             // 
             // groupBox2
             // 
-            this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.groupBox2.Controls.Add(this.blackmanRadio);
-            this.groupBox2.Controls.Add(this.hanningRadio);
-            this.groupBox2.Controls.Add(this.bartletRadio);
-            this.groupBox2.Controls.Add(this.hammingRadio);
-            this.groupBox2.Controls.Add(this.rectRadio);
-            this.groupBox2.Location = new System.Drawing.Point(1039, 384);
+            this.groupBox2.Controls.Add(this.radioButterworth);
+            this.groupBox2.Controls.Add(this.radioChebyshev2);
+            this.groupBox2.Controls.Add(this.radioChebyshev1);
+            this.groupBox2.Location = new System.Drawing.Point(1036, 384);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(76, 136);
-            this.groupBox2.TabIndex = 8;
+            this.groupBox2.Size = new System.Drawing.Size(89, 100);
+            this.groupBox2.TabIndex = 14;
             this.groupBox2.TabStop = false;
-            this.groupBox2.Text = "weights";
+            this.groupBox2.Text = "Filter";
             // 
-            // blackmanRadio
+            // radioButterworth
             // 
-            this.blackmanRadio.AutoSize = true;
-            this.blackmanRadio.Location = new System.Drawing.Point(2, 112);
-            this.blackmanRadio.Name = "blackmanRadio";
-            this.blackmanRadio.Size = new System.Drawing.Size(71, 17);
-            this.blackmanRadio.TabIndex = 0;
-            this.blackmanRadio.TabStop = true;
-            this.blackmanRadio.Text = "blackman";
-            this.blackmanRadio.UseVisualStyleBackColor = true;
+            this.radioButterworth.AutoSize = true;
+            this.radioButterworth.Location = new System.Drawing.Point(6, 19);
+            this.radioButterworth.Name = "radioButterworth";
+            this.radioButterworth.Size = new System.Drawing.Size(79, 17);
+            this.radioButterworth.TabIndex = 0;
+            this.radioButterworth.TabStop = true;
+            this.radioButterworth.Text = "Butterworth";
+            this.radioButterworth.UseVisualStyleBackColor = true;
             // 
-            // hanningRadio
+            // radioChebyshev1
             // 
-            this.hanningRadio.AutoSize = true;
-            this.hanningRadio.Location = new System.Drawing.Point(2, 89);
-            this.hanningRadio.Name = "hanningRadio";
-            this.hanningRadio.Size = new System.Drawing.Size(63, 17);
-            this.hanningRadio.TabIndex = 0;
-            this.hanningRadio.TabStop = true;
-            this.hanningRadio.Text = "hanning";
-            this.hanningRadio.UseVisualStyleBackColor = true;
+            this.radioChebyshev1.AutoSize = true;
+            this.radioChebyshev1.Location = new System.Drawing.Point(6, 42);
+            this.radioChebyshev1.Name = "radioChebyshev1";
+            this.radioChebyshev1.Size = new System.Drawing.Size(84, 17);
+            this.radioChebyshev1.TabIndex = 0;
+            this.radioChebyshev1.TabStop = true;
+            this.radioChebyshev1.Text = "Chebyshev1";
+            this.radioChebyshev1.UseVisualStyleBackColor = true;
             // 
-            // bartletRadio
+            // radioChebyshev2
             // 
-            this.bartletRadio.AutoSize = true;
-            this.bartletRadio.Location = new System.Drawing.Point(2, 66);
-            this.bartletRadio.Name = "bartletRadio";
-            this.bartletRadio.Size = new System.Drawing.Size(54, 17);
-            this.bartletRadio.TabIndex = 0;
-            this.bartletRadio.TabStop = true;
-            this.bartletRadio.Text = "bartlet";
-            this.bartletRadio.UseVisualStyleBackColor = true;
+            this.radioChebyshev2.AutoSize = true;
+            this.radioChebyshev2.Location = new System.Drawing.Point(6, 65);
+            this.radioChebyshev2.Name = "radioChebyshev2";
+            this.radioChebyshev2.Size = new System.Drawing.Size(84, 17);
+            this.radioChebyshev2.TabIndex = 0;
+            this.radioChebyshev2.TabStop = true;
+            this.radioChebyshev2.Text = "Chebyshev2";
+            this.radioChebyshev2.UseVisualStyleBackColor = true;
             // 
-            // hammingRadio
+            // button1
             // 
-            this.hammingRadio.AutoSize = true;
-            this.hammingRadio.Location = new System.Drawing.Point(2, 43);
-            this.hammingRadio.Name = "hammingRadio";
-            this.hammingRadio.Size = new System.Drawing.Size(67, 17);
-            this.hammingRadio.TabIndex = 0;
-            this.hammingRadio.TabStop = true;
-            this.hammingRadio.Text = "hamming";
-            this.hammingRadio.UseVisualStyleBackColor = true;
+            this.button1.Location = new System.Drawing.Point(1037, 519);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(88, 23);
+            this.button1.TabIndex = 13;
+            this.button1.Text = "H AFC";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_2);
             // 
-            // rectRadio
+            // button5
             // 
-            this.rectRadio.AutoSize = true;
-            this.rectRadio.Location = new System.Drawing.Point(2, 20);
-            this.rectRadio.Name = "rectRadio";
-            this.rectRadio.Size = new System.Drawing.Size(43, 17);
-            this.rectRadio.TabIndex = 0;
-            this.rectRadio.TabStop = true;
-            this.rectRadio.Text = "rect";
-            this.rectRadio.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(1041, 555);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 13;
-            this.button2.Text = "f charact.";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click_1);
+            this.button5.Location = new System.Drawing.Point(1036, 548);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(89, 23);
+            this.button5.TabIndex = 15;
+            this.button5.Text = "Chebyshev1";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // SignalForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1125, 599);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.button1);
+            this.Controls.Add(this.button2);
             this.Controls.Add(this.button4);
             this.Controls.Add(this.fileNameLabel);
             this.Controls.Add(this.samplesCount);
@@ -377,7 +349,6 @@
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.button3);
             this.Controls.Add(this.chart1);
-            this.Controls.Add(this.fDftButton);
             this.Name = "SignalForm";
             this.Text = "SignalForm";
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
@@ -394,7 +365,6 @@
         }
 
         #endregion
-        private System.Windows.Forms.Button fDftButton;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.GroupBox groupBox1;
@@ -411,13 +381,12 @@
         private System.Windows.Forms.NumericUpDown nNumeric;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.RadioButton hanningRadio;
-        private System.Windows.Forms.RadioButton bartletRadio;
-        private System.Windows.Forms.RadioButton hammingRadio;
-        private System.Windows.Forms.RadioButton rectRadio;
-        private System.Windows.Forms.RadioButton blackmanRadio;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.RadioButton radioButterworth;
+        private System.Windows.Forms.RadioButton radioChebyshev2;
+        private System.Windows.Forms.RadioButton radioChebyshev1;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button button5;
     }
 }

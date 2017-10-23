@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Forms.DataVisualization.Charting;
+using static System.Math;
 
 namespace SignalProcessing
 {
@@ -88,7 +89,6 @@ namespace SignalProcessing
             }
             double[] phase = new double[N];
             double[] amplitude = new double[N];
-            //double Hypot(double a, double b) => Math.Sqrt(a*a + b*b);
             for (int i = 0; i < N; i++)
             {
                 amplitude[i] = signal[i].Magnitude;
@@ -144,14 +144,7 @@ namespace SignalProcessing
             chart1.ChartAreas[0].AxisX.Title = "t";
             chart1.ChartAreas[0].AxisY.Title = settings.YLabel;
             Tuple<double, double>[] result = PrepareSignalPreviewData(signal, settings);
-            //if (n != 0)
-            //{
-            //    result.Take(n).ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
-            //}
-            //else
-            //{
-                result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
-            //}
+            result.ForEach((point) => chart1.Series[0].Points.Add(new DataPoint(point.Item1, point.Item2)));
         }
 
         private Tuple<double, double>[] PrepareSignalPreviewData(double[] signal, Settings settings) =>
@@ -237,8 +230,6 @@ namespace SignalProcessing
             int L = 1 << maxPower;
             int M = N / L;
             N = M * L;
-            //int L = N / M;
-            //N =L* M, L=2P.
             Complex[] calculationSignal = new Complex[N];
             for (int i = 0; i < N; i++)
             {
@@ -324,7 +315,6 @@ namespace SignalProcessing
                         Complex u = signal[q];
                         signal[q] = t + u;
                         signal[p] = u - t;
-                        //W = W * Wm;
                         W = W * Wm;
                     }
                 }
@@ -337,16 +327,7 @@ namespace SignalProcessing
             var inputSignal = _signal;
             int maxPower = FindMaxPower(inputSignal.Length);
             var signalCut = inputSignal.Take(1 << maxPower).ToArray();
-            //Stopwatch timeChecker = new Stopwatch();
-            //timeChecker.Start();
-            //ApplyTransform(DFT,signalCut,Direction.Forward);
-            //timeChecker.Stop();
-            //long time1 = timeChecker.ElapsedMilliseconds;
-            //timeChecker.Restart();
             ApplyTransform(FastDFT, signalCut, Direction.Forward);
-            //timeChecker.Stop();
-            //var time2 = timeChecker.ElapsedMilliseconds;
-            //MessageBox.Show($"DFT time {time1},{Environment.NewLine}FastDFT time {time2}");
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -441,7 +422,7 @@ namespace SignalProcessing
             {
                 var transformedSignal = FastDFTN(GetComplexData(_signal), Direction.Forward);
                 var backSignal = FastDFTN(LowFrequenciesFilter(transformedSignal, (double)numericUpDown1.Value, _settings), Direction.Inverse);
-                SaveWav(backSignal.Select((x)=>x.Real).ToArray(), _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
+                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
                 ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
             }
             if (highRadio.Checked)
@@ -477,10 +458,6 @@ namespace SignalProcessing
                 {
                     short signalValue = (short)backSignal[i];
                     writer.Write(signalValue);
-                    //byte byte1 = (byte)(signalValue & 0xFF);
-                    //byte byte2 = (byte)((signalValue>>8) & 0xFF);
-                    //writer.Write(byte1);
-                    //writer.Write(byte2);
                 }
             }
         }
@@ -537,7 +514,7 @@ namespace SignalProcessing
             BlackMan
         }
 
-        Dictionary<WeightType, Func<double,int, double>> WeightFunctions = new Dictionary<WeightType, Func<double,int, double>>()
+        Dictionary<WeightType, Func<double, int, double>> WeightFunctions = new Dictionary<WeightType, Func<double, int, double>>()
         {
             { WeightType.Rectangular, (i,N)=>1 },
             { WeightType.Hamming, (i,N)=> 0.54-0.46*Math.Cos(2*Math.PI*i/(N-1))},
@@ -546,9 +523,9 @@ namespace SignalProcessing
             { WeightType.BlackMan, (i,N)=>0.42-0.5*Math.Cos(2*Math.PI*i/(N-1))+0.08*Math.Cos(4*Math.PI*i/(N-1)) }
         };
 
-        double[] GenerateWeights(WeightType weightType,int N)
+        double[] GenerateWeights(WeightType weightType, int N)
         {
-            return Enumerable.Range(0, N).Select((x) => WeightFunctions[weightType](x,N)).ToArray();
+            return Enumerable.Range(0, N).Select((x) => WeightFunctions[weightType](x, N)).ToArray();
         }
 
         enum FilterType
@@ -557,24 +534,24 @@ namespace SignalProcessing
             Low
         }
 
-        double[] GenerateH(int N,double cutFrequency,FilterType filterType)
+        double[] GenerateH(int N, double cutFrequency, FilterType filterType)
         {
             int M = N - 1;
             int sign = filterType == FilterType.Low ? 1 : -1;
-            var centerH = filterType == FilterType.Low ? 2* cutFrequency : 1-2* cutFrequency;
+            var centerH = filterType == FilterType.Low ? 2 * cutFrequency : 1 - 2 * cutFrequency;
             return Enumerable.Range(0, N).Select(
                 (i) =>
-                (i == (M >> 1))? centerH :
-                sign*Math.Sin(2 * Math.PI * cutFrequency * (i - (M>>1))) 
-                / (Math.PI*(i - (M>>1))))
-                .ToArray();            
+                (i == (M >> 1)) ? centerH :
+                sign * Math.Sin(2 * Math.PI * cutFrequency * (i - (M >> 1)))
+                / (Math.PI * (i - (M >> 1))))
+                .ToArray();
         }
 
-        double[] ApplyFilter(double[] signal, double cutFrequency, int N,WeightType weightType,FilterType filterType)
+        double[] ApplyFilter(double[] signal, double cutFrequency, int N, WeightType weightType, FilterType filterType)
         {
             var result = new double[signal.Length];
             var w = GenerateWeights(weightType, N);
-            var h = GenerateH(N,cutFrequency,filterType);
+            var h = GenerateH(N, cutFrequency, filterType);
             for (int k = 0; k < signal.Length; k++)
             {
                 int windowN = N;
@@ -584,22 +561,22 @@ namespace SignalProcessing
                 }
                 for (int m = 0; m < windowN; m++)
                 {
-                    result[k] += w[m] * signal[k-m] * h[m];
-                }                
+                    result[k] += w[m] * signal[k - m] * h[m];
+                }
             }
             return result;
         }
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            (_settings,_signal) = LoadDataFromFile();
+            (_settings, _signal) = LoadDataFromFile();
             var fdft = FastDFT(GetComplexData(_signal), Direction.Forward);
             var backSignal = FastDFT(fdft, Direction.Inverse);
             ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "test");
         }
 
-        double CalculateFc(double x, Settings settings) => x / settings.XFrequency / 2;
-        
+        double CalculateFc(double x, Settings settings) => x / settings.XFrequency * 2;
+
 
         private void buttonWFilter_Click_1(object sender, EventArgs e)
         {
@@ -612,7 +589,7 @@ namespace SignalProcessing
                         CalculateFc((double)numericUpDown1.Value, _settings),
                         (int)nNumeric.Value,
                         GetWeightType(),
-                        FilterType.Low);                    
+                        FilterType.Low);
                 SaveWav(backSignal, _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
                 ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
             }
@@ -624,7 +601,7 @@ namespace SignalProcessing
                         CalculateFc((double)numericUpDown2.Value, _settings),
                         (int)nNumeric.Value,
                         GetWeightType(),
-                        FilterType.High);                    
+                        FilterType.High);
                 SaveWav(backSignal, _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
                 ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "High frequencies filter");
             }
@@ -632,53 +609,20 @@ namespace SignalProcessing
 
         private WeightType GetWeightType()
         {
-            if (blackmanRadio.Checked)
-                return WeightType.BlackMan;
-            if (hammingRadio.Checked)
-                return WeightType.Hamming;
-            if (hanningRadio.Checked)
-                return WeightType.Hanning;
-            if (bartletRadio.Checked)
-                return WeightType.Bartlet;
             return WeightType.Rectangular;
+            //if (blackmanRadio.Checked)
+            //    return WeightType.BlackMan;
+            //if (hammingRadio.Checked)
+            //    return WeightType.Hamming;
+            //if (hanningRadio.Checked)
+            //    return WeightType.Hanning;
+            //if (bartletRadio.Checked)
+            //    return WeightType.Bartlet;
+            //return WeightType.Rectangular;
         }
 
         private void button2_Click_1(object sender, EventArgs e)
         {
-            _settings = settings["wav"];
-            double[] fCharacteristicsSignal = new double[1<<10];
-            double[] resultSignal = new double[fCharacteristicsSignal.Length];
-            fCharacteristicsSignal[0] = 1;
-            int N = (int)nNumeric.Value;
-            if (lowRadio.Checked)
-            {
-
-                resultSignal =
-                    ApplyFilter(
-                        fCharacteristicsSignal,
-                        CalculateFc((double)numericUpDown1.Value, _settings),
-                        N,
-                        GetWeightType(),
-                        FilterType.Low);
-                //var w = GenerateWeights(GetWeightType(), (int)nNumeric.Value);
-                //ShowChart(w.Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), $"", "", $"{ GetWeightType()}");
-                ShowChart(resultSignal.Take(N).Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), "", "", "Frequency characteristic low filter");
-            }
-            if (highRadio.Checked)
-            {
-                resultSignal =
-                    ApplyFilter(
-                        fCharacteristicsSignal,
-                        CalculateFc((double)numericUpDown2.Value, _settings),
-                        N,
-                        GetWeightType(),
-                        FilterType.High);
-                //var w = GenerateWeights(GetWeightType(), (int)nNumeric.Value);
-                //ShowChart(w.Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), $"", "", $"{ GetWeightType()}");
-                ShowChart(resultSignal.Take(N).Select((x, i) => new Tuple<double, double>(i, x)).ToArray(), "", "", "Frequency characteristic high filter");
-            }
-
-            ApplyTransformWithLogChart(FastDFT, resultSignal, Direction.Forward);
 
         }
 
@@ -694,11 +638,400 @@ namespace SignalProcessing
                 (a, i) => new Tuple<double, double>(1.0 * i * settings.XFrequency / amp.Length, amp[i])
                 );
             ShowChart(magnitudePoints, chartXLabel, _settings.YLabel, $"Magnitude {transformFunction.Method.Name}");
-            ShowChart(magnitudePoints.Select((p)=>new Tuple<double,double>(p.Item1,20*Math.Log10(p.Item2))).ToArray()
+            ShowChart(magnitudePoints.Select((p) => new Tuple<double, double>(p.Item1, 20 * Math.Log10(p.Item2))).ToArray()
                 , chartXLabel, _settings.YLabel, $"Log Magnitude {transformFunction.Method.Name}");
 
             var phasePoints = phase.Select((s, i) => new Tuple<double, double>(i * settings.XFrequency / phase.Length, s));
             ShowChart(phasePoints, chartXLabel, _settings.YLabel, $"Phase {transformFunction.Method.Name}");
+        }
+
+        private const int M = 8;
+        private const int F = M * 360;
+        private const double step = 2 * Math.PI / F;
+
+        double Butterworth(double w, int n) => 1.0 / Math.Sqrt(1.0 + Math.Pow(w, 2 * n));
+
+        private List<Tuple<double, double>> CalculateButterworthAFC(int n)
+        {
+            return Enumerable.Range(0, F / 2).Select(
+                (i) => new Tuple<double, double>(i * step, Butterworth(step * i, n))
+                ).ToList();
+        }
+
+        private double T(int n, double x)
+        {
+            if (n == 0) return 1;
+            if (n == 1) return x;
+            return 2 * x * T(n - 1, x) - T(n - 2, x);
+        }
+
+        double Sqr(double x) => x * x;
+        double Chebyshev1(double x,int n,double epsilon) => 
+            1 / Math.Sqrt(1 + Sqr(epsilon * T(n, x)));
+
+        private List<Tuple<double, double>> CalculateChebyshev1AFC(int n, double epsilon)
+        {
+            
+            var result = Enumerable.Range(0, F / 2).Select(
+                (i) => new Tuple<double, double>(i * step, Chebyshev1(step * i,n,epsilon))
+                ).ToList();
+            return result;
+        }
+
+        double Chebyshev2(double x,int n,double epsilon) => 
+            1.0 / Math.Sqrt(1 + 1 / Sqr(epsilon * T(n, 1 / x)));
+
+        private List<Tuple<double, double>> CalculateChebyshev2AFC(int n, double epsilon)
+        {
+            
+            var result = Enumerable.Range(0, F / 2).Select(
+                (i) => new Tuple<double, double>(i * step, Chebyshev2(step * i,n,epsilon))
+                ).ToList();
+            return result;
+        }
+
+        private void ShowButterworthAFC()
+        {
+            var butterworth5 = CalculateButterworthAFC(5);
+            var butterworth8 = CalculateButterworthAFC(8);
+            var butterworth11 = CalculateButterworthAFC(11);
+            ChartForm butterworthChart = new ChartForm(butterworth5, "w", "", "Butterworth AFC", "N=5");
+            butterworthChart.AddSeriresData(butterworth8, "N=8");
+            butterworthChart.AddSeriresData(butterworth11, "N=11");
+            butterworthChart.Show();
+        }
+
+        private void ShowChebyshev1AFC()
+        {
+            var chebyshev1_5 = CalculateChebyshev1AFC(5, 0.5);
+            var chebyshev1_8 = CalculateChebyshev1AFC(8, 0.5);
+            var chebyshev1_11 = CalculateChebyshev1AFC(8, 0.4);
+            ChartForm chart = new ChartForm(chebyshev1_5, "w", "", "Chebyshev1 AFC", "N=5, E=0.5");
+            chart.AddSeriresData(chebyshev1_8, "N=8, E=0.5");
+            chart.AddSeriresData(chebyshev1_11, "N=11, E=0.4");
+            chart.Show();
+        }
+
+        private void ShowChebyshev2AFC()
+        {
+            var chebyshev2_5 = CalculateChebyshev2AFC(5, 0.1);
+            var chebyshev2_8 = CalculateChebyshev2AFC(8, 0.1);
+            var chebyshev2_11 = CalculateChebyshev2AFC(11, 0.05);
+            ChartForm chart = new ChartForm(chebyshev2_5, "w", "", "Chebyshev2 AFC", "N=5, E=0.1");
+            chart.AddSeriresData(chebyshev2_8, "N=8, E=0.1");
+            chart.AddSeriresData(chebyshev2_11, "N=11, E=0.2");
+            chart.Show();
+        }
+        
+        private void button2_Click_2(object sender, EventArgs e)
+        {
+            if (radioButterworth.Checked)
+            {
+                ShowButterworthAFC();
+            }
+            if (radioChebyshev1.Checked)
+            {
+                ShowChebyshev1AFC();
+            }
+            if (radioChebyshev2.Checked)
+            {
+                ShowChebyshev2AFC();
+            }
+        }
+
+        private Complex BatterwothH(Complex s, int n)
+        {
+            int coeff = n % 2;
+            Complex mult = 1 + s * coeff;
+
+            for (int k = 1; k <= (n - coeff) / 2; k++)
+            {
+                double theta = (2 * k - 1) * Math.PI / (2 * n);
+                mult *= (s * s + 2 * Math.Sin(theta) * s + 1);
+            }
+            return 1 / mult;
+        }
+
+        private (List<Tuple<double, double>> afc, List<Tuple<double, double>> ffc) CalculateBatterworth(int n)
+        {
+
+            var result = Enumerable.Range(0, F / 2).Select(
+                (i) => new Tuple<double, Complex>(i * step, BatterwothH(new Complex(0, i * step), n))
+                ).ToList();
+
+            var afc = result.Select(p => new Tuple<double, double>(p.Item1, p.Item2.Magnitude));
+            var ffc = result.Select(p => new Tuple<double, double>(p.Item1, p.Item2.Phase + (p.Item2.Phase > 0 ? -Math.PI : 0)));
+
+            return (afc.ToList(), Unwrap(ffc.ToList()));
+        }
+
+
+        private (List<Tuple<double, double>> afc, List<Tuple<double, double>> ffc) CalculateChebyshev1HAFC(int n, double e)
+        {
+
+            var result = Enumerable.Range(0, F / 2).Select(
+                (i) => new Tuple<double, Complex>(i * step, Chebyshev1H(new Complex(0, i * step), n, e))
+                ).ToList();
+
+            var afcval = result.Select(p => new Tuple<double, double>(p.Item1, p.Item2.Magnitude));
+            var ffcval = result.Select(p => new Tuple<double, double>(p.Item1, p.Item2.Phase + (p.Item2.Phase > 0 ? -Math.PI : 0)));
+
+            return (afcval.ToList(), Unwrap(ffcval.ToList()));
+        }
+
+        private const double unwrapEpsilon = 0.3 / M;
+
+        private List<Tuple<double, double>> Unwrap(List<Tuple<double, double>> source)
+        {
+            double correction = 0;
+            List<Tuple<double, double>> result = new List<Tuple<double, double>>();
+            result.Add(new Tuple<double, double>(source[0].Item1, source[0].Item2));
+            for (int i = 1; i < source.Count; i++)
+            {
+                double diff = Math.Abs(source[i].Item2 - source[i - 1].Item2);
+                if (diff + unwrapEpsilon >= Math.PI * 0.95) correction += Math.PI;
+                result.Add(new Tuple<double, double>(source[i].Item1, source[i].Item2 - correction));
+            }
+            return result;
+        }
+
+        private Complex Chebyshev1H(Complex s, int n, double e)
+        {
+            double arsh(double x) => Math.Log(x + Math.Sqrt(x * x + 1));
+            double betta = arsh(1.0 / e) / n;
+            double sig0 = -Math.Sinh(betta);
+
+            double Gp = n % 2 == 1 ? 1.0 : 1.0 / Math.Sqrt(1.0 + e * e);
+            Complex C = n % 2 == 1 ? -sig0 / (s - sig0) : 1.0;
+
+            Complex mul = 1;
+            for (int k = 1; k <= (n - n % 2) / 2; k++)
+            {
+                double thetta = (2 * k - 1) * Math.PI / (2 * n);
+                double sig = -Math.Sin(thetta) * Math.Sinh(betta);
+                double w = Math.Cos(thetta) * Math.Cosh(betta);
+                mul *= (sig * sig + w * w) / (s * s - 2 * sig * s + sig * sig + w * w);
+            }
+            return mul * Gp * C;
+        }
+
+        private void ShowButterworthHAFC()
+        {
+            var butterworth5 = CalculateBatterworth(5);
+            var butterworth8 = CalculateBatterworth(8);
+            var butterworth11 = CalculateBatterworth(11);
+            ChartForm afcf = new ChartForm(butterworth5.afc, "w", "", "Butterworth H AFC", "N=5");
+            afcf.AddSeriresData(butterworth8.afc, "N=8");
+            afcf.AddSeriresData(butterworth11.afc, "N=11");
+            afcf.Show();
+
+
+            ChartForm ffcf = new ChartForm(butterworth5.ffc, "w", "", "Butterworth H PCF", "N=5");
+            ffcf.AddSeriresData(butterworth8.ffc, "N=8");
+            ffcf.AddSeriresData(butterworth11.ffc, "N=11");
+            ffcf.Show();
+        }
+
+        private void ShowChebyshev1HAFC()
+        {
+            var chebyshev1_5 = CalculateChebyshev1HAFC(5, 0.5);
+            var chebyshev1_8 = CalculateChebyshev1HAFC(8, 0.5);
+            var chebyshev1_11 = CalculateChebyshev1HAFC(11, 0.2);
+
+            ChartForm afcf = new ChartForm(chebyshev1_5.afc, "w", "", "Chebyshev1 H AFC", "N=5 E=0.5");
+            afcf.AddSeriresData(chebyshev1_8.afc, "N=8 E=0.5");
+            afcf.AddSeriresData(chebyshev1_11.afc, "N=11 E=0.2");
+            afcf.Show();
+
+            ChartForm ffcf = new ChartForm(chebyshev1_5.ffc, "w", "", "Chebyshev1 H PCF", "N=5 E=0.5");
+            ffcf.AddSeriresData(chebyshev1_8.ffc, "N=8 E=0.5");
+            ffcf.AddSeriresData(chebyshev1_11.ffc, "N=11 E=0.2");
+            ffcf.Show();
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)
+        {
+            if (radioButterworth.Checked)
+            {
+                ShowChebyshev1HAFC();
+            }
+            if (radioChebyshev1.Checked)
+            {
+                ShowChebyshev1HAFC();
+            }
+        }
+
+        private static double[] ApplyChebyshev1Filter(double[] source, double fc, int N, FilterType type = FilterType.Low)
+        {
+            var result = new double[source.Length];
+
+            var hc = CreateChebyshevFilter(N, fc, type);
+
+            //y[k] = b0x[k] + b1x[k - 1] + b2x[k - 2] + 
+            //    a1y[k - 1] + a2y[k - 2]
+
+            for (int i = N; i < source.Length; i++)
+            {
+                result[i] = hc.alpha[0] * source[i];
+                for (int k = 1; k <= N; k++)
+                {
+                    result[i] += hc.alpha[k] * source[i - k] + hc.betta[k] * result[i - k];
+                }
+            }
+            return result;
+        }
+
+
+        private static (double[] alpha, double[] betta) CreateChebyshevFilter(int n, double fc, FilterType filterType, int pr = 10)
+        {
+            // NP количество звеньев (полюсов) 2 – 20 (четное)
+            Debug.Assert(n % 2 == 0);
+            int NP = n;
+            int N = n + 2;//extra space for shift
+            double[] a, b, ta, tb;
+            double a0;
+            double a1;
+            double a2;
+            double b1;
+            double b2;
+            a = new double[N + 1];
+            b = new double[N + 1];
+            ta = new double[N + 1];
+            tb = new double[N + 1];
+
+            a[2] = b[2] = 1;
+
+            for (int j = 1; j <= NP / 2; j++)
+            {
+                //CalcPole(j)
+                (a0, a1, a2, b1, b2) = CalcPole(NP, fc, filterType, j, pr);
+
+                //
+                a.CopyTo(ta, 0);
+                b.CopyTo(tb, 0);
+                for (int i = 2; i <= N; i++)
+                {
+                    a[i] = a0 * ta[i] + a1 * ta[i - 1] + a2 * ta[i - 2];
+                    b[i] = tb[i] - b1 * tb[i - 1] - b2 * tb[i - 2];
+                }
+            }
+
+            b[2] = 0;
+            for (int i = 0; i <= n; i++)
+            {
+                a[i] = a[i + 2];
+                b[i] = -b[i + 2];
+            }
+            // нормировка коэффициента усиления
+            ///*
+            double SA = 0;
+            double SB = 0;
+            int k = 0;
+            for (int i = 0; i <= n; i++)
+            {
+                if (filterType == FilterType.Low)
+                {
+                    SA += a[i];
+                    SB += b[i];
+                }
+                else
+                {
+                    k = ((i % 2) == 0) ? 1 : -1;
+                    SA += a[i] * k;
+                    SB += b[i] * k;
+                }
+            }
+            double GAIN = SA / (1 - SB);
+            for (int i = 0; i <= n; i++)
+            {
+                a[i] = a[i] / GAIN;
+            }
+            //*/
+            return (a, b);
+        }
+
+        private static (double a0, double a1, double a2, double b1, double b2)
+            CalcPole(int NP, double fc, FilterType filterType, int p, int pr)
+        {
+            //double arsh(double x) => Log(x + Sqrt(x * x + 1));
+            double sqr(double x) => x * x;
+
+
+            ///*
+            double phase = PI / 2 / NP + (p - 1) * PI / NP;//PI / (2 * n) + (j - 1) * PI / n;
+            double rp = -Cos(phase);
+            double ip = Sin(phase);
+
+            if (pr != 0)
+            {
+                double es = Sqrt(sqr(100.0 / (100.0 - pr)) - 1);
+                double vx = 1.0 / NP * Log(1.0 / es + Sqrt(1 / sqr(es) + 1));
+                double kx = 1.0 / NP * Log(1.0 / es + Sqrt(1 / sqr(es) - 1));
+                kx = (Exp(kx) + Exp(-kx)) / 2;
+                //p = p * Sinh(vx) / Cosh(vx);
+                rp = rp * (Exp(vx) - Exp(-vx)) / 2 / kx;
+                ip = ip * (Exp(vx) + Exp(-vx)) / 2 / kx;
+            }
+            // преобразование аналоговой области в цифровую
+            //Debug.Assert(fc == 0.5);
+            double t = 2 * Tan(0.5);
+            double w = 2 * PI * fc;
+            //m = rp * rp + ip * ip;
+            double m = sqr(rp) + sqr(ip);
+            double d = 4 - 4 * rp * t + m * sqr(t);
+            double x0 = sqr(t) / d;
+            double x1 = 2 * sqr(t) / d;
+            double x2 = sqr(t) / d;
+            double y1 = (8 - 2 * m * sqr(t)) / d;
+            double y2 = (-4 - 4 * rp * t - m * sqr(t)) / d;
+            double k;
+            if (filterType == FilterType.High)
+            {
+                k = -Cos(w / 2.0 + 0.5) / Cos(w / 2.0 - 0.5);
+            }
+            else
+            {
+                k = Sin(0.5 - w / 2.0) / Sin(0.5 + w / 2.0);
+            }
+            d = 1 + y1 * k - y2 * sqr(k);
+            double a0 = (x0 - x1 * k + x2 * sqr(k)) / d;
+            double a1 = (-2 * x0 * k + x1 + x1 * sqr(k) - 2 * x2 * k) / d;
+            double a2 = (x0 * sqr(k) - x1 * k + x2) / d;
+            double b1 = (2 * k + y1 + y1 * sqr(k) - 2 * y2 * k) / d;
+            double b2 = (-sqr(k) - y1 * k + y2) / d;
+            if (filterType == FilterType.High)
+            {
+                a1 = -a1;
+                b1 = -b1;
+            }
+            return (a0, a1, a2, b1, b2);
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            if (lowRadio.Checked)
+            {
+
+                var backSignal =
+                    ApplyChebyshev1Filter(
+                        _signal,
+                        CalculateFc((double)numericUpDown1.Value, _settings),
+                        (int)nNumeric.Value,
+                        FilterType.Low);
+                SaveWav(backSignal, _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "Low frequencies filter");
+            }
+            if (highRadio.Checked)
+            {
+                var backSignal =
+                    ApplyChebyshev1Filter(
+                        _signal,
+                        CalculateFc((double)numericUpDown2.Value, _settings),
+                        (int)nNumeric.Value,
+                        FilterType.High);
+                SaveWav(backSignal, _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
+                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "Chebyshev1", _settings.YLabel, "High frequencies filter");
+            }
         }
     }
 }
