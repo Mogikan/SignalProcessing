@@ -1112,19 +1112,19 @@ namespace SignalProcessing
             {
                 result[u] = new int[N];
                 int ut = u;
-                int sr = 1 << (n-1);
+                int sr = 1;
                 R[0] = (ut & sr) != 0 ? 1 : 0;
                 for (int i = 1; i < n; i++)
                 {
                     R[i] = (ut & sr) != 0 ? 1 : 0;
-                    sr >>= 1;
+                    sr <<= 1;
                     R[i] += (ut & sr) != 0 ? 1 : 0;                    
                 }
                 for (int v = 0; v < N; v++)
                 {
                     int vt = v;
                     int sum = 0;
-                    for (int i = 0; i < n; i++)
+                    for (int i = n - 1; i >= 0; i--)
                     {
                         sum += R[i] * (vt & 1);
                         vt >>= 1;
@@ -1289,7 +1289,7 @@ namespace SignalProcessing
             var walsh = WalshTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
             if (nNumeric.Value > 0)
             {
-                for (int i = (int)nNumeric.Value; i < walsh.Length; i++)
+                for (int i = (int)nNumeric.Value * 2 + 1; i < walsh.Length; i++)
                 {
                     walsh[i] = 0;
                 }
@@ -1303,7 +1303,7 @@ namespace SignalProcessing
             var hadamard = HadamardTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
             if (nNumeric.Value > 0)
             {
-                for (int i = (int)nNumeric.Value; i < hadamard.Length; i++)
+                for (int i = (int)nNumeric.Value *2 + 1; i < hadamard.Length; i++)
                 {
                     hadamard[i] = 0;
                 }
@@ -1321,10 +1321,14 @@ namespace SignalProcessing
             }
             double[] phase = new double[N];
             double[] amplitude = new double[N];
+            amplitude[0] = signal[0];
+            amplitude[N - 1] = Abs(signal[2 * N - 1]);
+            phase[0] = 0;
+            phase[N - 1] = PI / 2;
             for (int i = 1; i < N; i++)
             {
-                amplitude[i-1] = Sqrt(signal[i] * signal[i] + signal[i + 1] * signal[i + 1]);
-                phase[i-1] = Atan2(signal[i], signal[i + 1]);
+                amplitude[i] = Sqrt(Sqr(signal[2 * i - 1]) + Sqr(signal[2 * i] * signal[2 * i]));
+                phase[i] = Atan2(signal[2 * i - 1], signal[2 * i]);
             }
             return (amplitude, phase);
         }
