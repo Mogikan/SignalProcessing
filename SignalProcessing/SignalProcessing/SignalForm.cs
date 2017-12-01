@@ -504,7 +504,7 @@ namespace SignalProcessing
         //    (_settings, _signal, _header, _fileName) = LoadWav();
         //    DisplayData(_settings, _signal, (int)nNumeric.Value);
         //}      
-          
+
         enum WeightType
         {
             Rectangular,
@@ -1105,7 +1105,7 @@ namespace SignalProcessing
 
         public static int[][] BuildWalshMatrix(int N)
         {
-            int n = FindMaxPower(N)+1;
+            int n = FindMaxPower(N) + 1;
             int[][] result = new int[N][];
             int[] R = new int[n];
             for (int u = 0; u < N; u++)
@@ -1118,7 +1118,7 @@ namespace SignalProcessing
                 {
                     R[i] = (ut & sr) != 0 ? 1 : 0;
                     sr <<= 1;
-                    R[i] += (ut & sr) != 0 ? 1 : 0;                    
+                    R[i] += (ut & sr) != 0 ? 1 : 0;
                 }
                 for (int v = 0; v < N; v++)
                 {
@@ -1178,7 +1178,7 @@ namespace SignalProcessing
 
         private int[][] BuildHadamardMatrix(int N)
         {
-            int n = FindMaxPower(N)+1;
+            int n = FindMaxPower(N) + 1;
             int[][] result = new int[N][];
             int[] R = new int[n];
             for (int u = 0; u < N; u++)
@@ -1211,10 +1211,10 @@ namespace SignalProcessing
 
         private double[] WalshTransform(double[] inputSignal, Direction direction)
         {
-            Debug.Assert(inputSignal.Length==1<<FindMaxPower(inputSignal.Length));
+            Debug.Assert(inputSignal.Length == 1 << FindMaxPower(inputSignal.Length));
             int pointsCount = inputSignal.Length;
             var walsh = BuildWalshMatrix(pointsCount);
-            
+
             double[] transform = new double[pointsCount];
             for (int k = 0; k < pointsCount; k++)
             {
@@ -1286,7 +1286,7 @@ namespace SignalProcessing
 
         private void button8_Click(object sender, EventArgs e)
         {
-            var walsh = WalshTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            var walsh = WalshTransform(_signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
             if (nNumeric.Value > 0)
             {
                 if (lowRadio.Checked)
@@ -1371,12 +1371,164 @@ namespace SignalProcessing
 
         private void hadamard_Click(object sender, EventArgs e)
         {
-            ApplyTransform(HadamardTransform, _signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            ApplyTransform(HadamardTransform, _signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
         }
 
         private void walsh_Click(object sender, EventArgs e)
         {
             ApplyTransform(WalshTransform, _signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+        }
+
+        private double[] HaarTransform(double[] signal, Direction direction)
+        {            
+            return (direction == Direction.Forward)? ForwardHaar(signal):InverseHaar(signal);
+        }
+        private double[] ForwardHaar(double[] a)
+        {
+            int n = a.Length;
+            while (n > 1)
+            {
+                int half = n >> 1;
+                double[] sum = new double[half];
+                double[] diff = new double[half];
+                for (int i = 0; i < half; i++)
+                {
+                    sum[i] = (a[i * 2] + a[i * 2 + 1]) / 2.0;
+                    diff[i] = (a[i * 2] - a[i * 2 + 1]) / 2.0;
+                }
+                for (int i = 0; i < half; i++)
+                {
+                    a[i] = sum[i];
+                    a[i + half] = diff[i];
+                }
+                n = n >> 1;
+            }
+            return a;
+        }
+        private double[] InverseHaar(double[] a)
+        {
+            int n = 2;
+            while (n <= a.Length)
+            {
+                int half = n >> 1;
+                double[] sum = new double[half];
+                double[] diff = new double[half] ;
+                for (int i = 0; i < half; i++)
+                {
+                    sum[i] = a[i];
+                    diff[i] = a[i + half];
+                }
+                for (int i = 0; i < half; i++)
+                {
+                    a[2 * i] = (sum[i] + diff[i]) * 0.5;
+                    a[2 * i + 1] = (sum[i] - diff[i]) * 0.5;
+                }                
+                n <<= 1;
+            }
+            return a;
+        }
+
+
+        //
+        // forwarsform scaling (smoothing) coefficients
+        //
+        private double h1 => (3 + Sqrt(3)) / (4 * Sqrt(2));
+        private double h2 => (3 - Sqrt(3)) / (4 * Sqrt(2));
+        private double h3 => (1 - Sqrt(3)) / (4 * Sqrt(2));
+        private double h0 => (1 + Sqrt(3)) / (4 * Sqrt(2));
+
+        private double g0 => h3;
+        private double g1 => -h2;
+        private double g2 => h1;
+        private double g3 => -h0;
+
+        private double invH0 => h2;
+        private double invH1 => g2;  // h1
+        private double invH2 => h0;
+        private double invH3 => g0;  // h3
+
+        private double invG0 => h3;
+        private double invG1 => g3;  // -h0
+        private double invG2 => h1;
+        private double invG3 => g1;  // -h2
+
+
+        private double[] ForwardDaubechies(double[] a)
+        {
+            int N = a.Length;
+            int n;
+            for (n = N; n >= 4; n >>= 1)
+            {
+
+                if (n >= 4)
+                {
+                    int i, j;
+                    int half = n >> 1;
+
+                    double[] tmp = new double[n];
+
+                    i = 0;
+                    for (j = 0; j < n - 3; j = j + 2)
+                    {
+                        tmp[i] = a[j] * h0 + a[j + 1] * h1 + a[j + 2] * h2 + a[j + 3] * h3;
+                        tmp[i + half] = a[j] * g0 + a[j + 1] * g1 + a[j + 2] * g2 + a[j + 3] * g3;
+                        i++;
+                    }
+
+                    tmp[i] = a[n - 2] * h0 + a[n - 1] * h1 + a[0] * h2 + a[1] * h3;
+                    tmp[i + half] = a[n - 2] * g0 + a[n - 1] * g1 + a[0] * g2 + a[1] * g3;
+
+                    for (i = 0; i < n; i++)
+                    {
+                        a[i] = tmp[i];
+                    }
+                }
+            }
+            return a;
+        }
+        private double[] InverseDaubechies(double[] a)
+        {
+            int N = a.Length;
+            int n;
+            for (n = 4; n <= N; n <<= 1)
+            {
+                int i, j;
+                int half = n >> 1;
+                int halfPls1 = half + 1;
+
+                double[] tmp = new double[n];
+
+                tmp[0] = a[half - 1] * invH0 + a[n - 1] * invH1 + a[0] * invH2 + a[half] * invH3;
+                tmp[1] = a[half - 1] * invG0 + a[n - 1] * invG1 + a[0] * invG2 + a[half] * invG3;
+                j = 2;
+                for (i = 0; i < half - 1; i++)
+                {
+                    tmp[j++] = a[i] * invH0 + a[i + half] * invH1 + a[i + 1] * invH2 + a[i + halfPls1] * invH3;
+                    tmp[j++] = a[i] * invG0 + a[i + half] * invG1 + a[i + 1] * invG2 + a[i + halfPls1] * invG3;
+                }
+                for (i = 0; i < n; i++)
+                {
+                    a[i] = tmp[i];
+                }
+            }
+            return a;
+        }
+        private double[] DaubechiesTransform(double[] signal, Direction direction)
+        {            
+            return (direction == Direction.Forward) ? ForwardDaubechies(signal) : InverseDaubechies(signal);
+        }
+
+        private void haar_Click(object sender, EventArgs e)
+        {
+            DisplayData(_settings,
+                HaarTransform(HaarTransform(_signal, Direction.Forward),Direction.Inverse));
+
+        }
+
+        private void daubechies_Click(object sender, EventArgs e)
+        {
+            DisplayData(_settings,
+                DaubechiesTransform(DaubechiesTransform(_signal, Direction.Forward), Direction.Inverse));
         }
     }
 }
