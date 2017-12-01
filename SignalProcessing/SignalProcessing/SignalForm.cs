@@ -1185,12 +1185,12 @@ namespace SignalProcessing
             {
                 result[u] = new int[N];
                 int ut = FromGray(ReverseIndex(u, n));
-                int sr = 1 << (n-1);
+                int sr = 1;
                 R[0] = (ut & sr) != 0 ? 1 : 0;
                 for (int i = 1; i < n; i++)
                 {
                     R[i] = (ut & sr) != 0 ? 1 : 0;
-                    sr >>= 1;
+                    sr <<= 1;
                     R[i] += (ut & sr) != 0 ? 1 : 0;
                     //R[i] %= 2;
                 }
@@ -1198,7 +1198,7 @@ namespace SignalProcessing
                 {
                     int vt = v;
                     int sum = 0;
-                    for (int i = 0; i < n; i++)
+                    for (int i = n - 1; i >= 0; i--)
                     {
                         sum += R[i] * (vt & 1);
                         vt >>= 1;
@@ -1289,9 +1289,19 @@ namespace SignalProcessing
             var walsh = WalshTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
             if (nNumeric.Value > 0)
             {
-                for (int i = (int)nNumeric.Value * 2 + 1; i < walsh.Length; i++)
+                if (lowRadio.Checked)
                 {
-                    walsh[i] = 0;
+                    for (int i = (int)nNumeric.Value * 2 + 1; i < walsh.Length; i++)
+                    {
+                        walsh[i] = 0;
+                    }
+                }
+                if (highRadio.Checked)
+                {
+                    for (int i = 0;i< (int)nNumeric.Value * 2 + 1; i++)
+                    {
+                        walsh[i] = 0;
+                    }
                 }
             }
             var backSignal = WalshTransform(walsh, Direction.Inverse);
@@ -1300,15 +1310,25 @@ namespace SignalProcessing
 
         private void button7_Click(object sender, EventArgs e)
         {
-            var hadamard = HadamardTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            var hadamard = RecursiveHadamardTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
             if (nNumeric.Value > 0)
             {
-                for (int i = (int)nNumeric.Value *2 + 1; i < hadamard.Length; i++)
+                if (lowRadio.Checked)
                 {
-                    hadamard[i] = 0;
+                    for (int i = (int)nNumeric.Value * 2 + 1; i < hadamard.Length; i++)
+                    {
+                        hadamard[i] = 0;
+                    }                    
+                }
+                if (highRadio.Checked)
+                {
+                    for (int i = 0; i < (int)nNumeric.Value * 2 + 1; i++)
+                    {
+                        hadamard[i] = 0;
+                    }
                 }
             }
-            var backSignal = HadamardTransform(hadamard, Direction.Inverse);
+            var backSignal = RecursiveHadamardTransform(hadamard, Direction.Inverse);
             ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Hadamard");
         }
 
