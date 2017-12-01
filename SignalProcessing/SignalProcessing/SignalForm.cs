@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -49,7 +50,7 @@ namespace SignalProcessing
             {"sawtooth", new Settings(0,1,360,"") },
             {"triangle", new Settings(0,1,360,"") },
             {"square", new Settings(0,1,360,"") },
-            {"wav",new Settings(0,1,44100,"")},
+            {"wav",new Settings(0,1,44100,"")}
         };
 
         enum Direction
@@ -115,7 +116,7 @@ namespace SignalProcessing
                         var fileNameWOExtension = Path.GetFileNameWithoutExtension(fileName);
                         var settingsSelector = Path.GetFileNameWithoutExtension(fileNameWOExtension).Remove(fileNameWOExtension.Length - 2);
                         var selectedSettings = settings[settingsSelector];
-                        var signal = stringValues.Select((stringValue) => (Convert.ToDouble(stringValue) - selectedSettings.BaseValue) / selectedSettings.Step).ToArray();
+                        var signal = stringValues.Select((stringValue) => (Convert.ToDouble(stringValue,CultureInfo.InvariantCulture) - selectedSettings.BaseValue) / selectedSettings.Step).ToArray();
                         return (selectedSettings, signal);
                     }
                 }
@@ -124,10 +125,10 @@ namespace SignalProcessing
         }
 
 
-        private double[] _signal;
+        private double[] _signal = { 16, 14, 12, 10, 8, 6, 4, 2 };
         private byte[] _header;
         private string _fileName;
-        private Settings _settings;
+        private Settings _settings = new Settings(0, 1, 360, "");
 
         private void loadDataButton_Click(object sender, EventArgs e)
         {
@@ -137,6 +138,7 @@ namespace SignalProcessing
 
         private void DisplayData(Settings settings, double[] signal, int n = 0)
         {
+            chart1.Series[0].Points.Clear();
             if (signal == null) return;
             samplesCount.Text = signal.Length.ToString();
             chart1.ChartAreas[0].AxisX.Minimum = 0;
@@ -1432,6 +1434,8 @@ namespace SignalProcessing
         //
         // forwarsform scaling (smoothing) coefficients
         //
+
+        private int _scale = 5;
         private double h1 => (3 + Sqrt(3)) / (4 * Sqrt(2));
         private double h2 => (3 - Sqrt(3)) / (4 * Sqrt(2));
         private double h3 => (1 - Sqrt(3)) / (4 * Sqrt(2));
@@ -1457,7 +1461,7 @@ namespace SignalProcessing
         {
             int N = a.Length;
             int n;
-            for (n = N; n >= 4; n >>= 1)
+            for (n = N; n >= 4 * (1<<_scale); n >>= 1)
             {
 
                 if (n >= 4)
@@ -1490,7 +1494,7 @@ namespace SignalProcessing
         {
             int N = a.Length;
             int n;
-            for (n = 4; n <= N; n <<= 1)
+            for (n = 4 * (1 << _scale); n <= N; n <<= 1)
             {
                 int i, j;
                 int half = n >> 1;
@@ -1527,8 +1531,10 @@ namespace SignalProcessing
 
         private void daubechies_Click(object sender, EventArgs e)
         {
+            int mp = FindMaxPower(_signal.Length);
             DisplayData(_settings,
-                DaubechiesTransform(DaubechiesTransform(_signal, Direction.Forward), Direction.Inverse));
+                DaubechiesTransform(DaubechiesTransform(_signal.Take(1<<mp).ToArray(), 
+                Direction.Forward), Direction.Inverse));
         }
     }
 }
