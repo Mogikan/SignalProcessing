@@ -52,6 +52,7 @@
             this.button8 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -187,7 +188,7 @@
             // 
             this.samplesCount.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.samplesCount.AutoSize = true;
-            this.samplesCount.Location = new System.Drawing.Point(1043, 60);
+            this.samplesCount.Location = new System.Drawing.Point(1043, 96);
             this.samplesCount.Name = "samplesCount";
             this.samplesCount.Size = new System.Drawing.Size(31, 13);
             this.samplesCount.TabIndex = 10;
@@ -197,7 +198,7 @@
             // 
             this.fileNameLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.fileNameLabel.AutoSize = true;
-            this.fileNameLabel.Location = new System.Drawing.Point(1043, 38);
+            this.fileNameLabel.Location = new System.Drawing.Point(1044, 73);
             this.fileNameLabel.Name = "fileNameLabel";
             this.fileNameLabel.Size = new System.Drawing.Size(51, 13);
             this.fileNameLabel.TabIndex = 10;
@@ -206,7 +207,7 @@
             // nNumeric
             // 
             this.nNumeric.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nNumeric.Location = new System.Drawing.Point(1042, 147);
+            this.nNumeric.Location = new System.Drawing.Point(1043, 183);
             this.nNumeric.Maximum = new decimal(new int[] {
             50000,
             0,
@@ -248,7 +249,7 @@
             // 
             this.label3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(1043, 131);
+            this.label3.Location = new System.Drawing.Point(1044, 167);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(15, 13);
             this.label3.TabIndex = 9;
@@ -265,7 +266,7 @@
             // 
             // button7
             // 
-            this.button7.Location = new System.Drawing.Point(1042, 105);
+            this.button7.Location = new System.Drawing.Point(1042, 141);
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(77, 23);
             this.button7.TabIndex = 18;
@@ -275,9 +276,9 @@
             // 
             // button8
             // 
-            this.button8.Location = new System.Drawing.Point(1043, 76);
+            this.button8.Location = new System.Drawing.Point(1043, 112);
             this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(75, 23);
+            this.button8.Size = new System.Drawing.Size(76, 23);
             this.button8.TabIndex = 18;
             this.button8.Text = "Walsh Filter";
             this.button8.UseVisualStyleBackColor = true;
@@ -285,7 +286,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(1043, 173);
+            this.button1.Location = new System.Drawing.Point(1043, 209);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 19;
@@ -295,7 +296,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1043, 202);
+            this.button2.Location = new System.Drawing.Point(1043, 238);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 19;
@@ -303,11 +304,22 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.daubechies_Click);
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(1041, 42);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(77, 23);
+            this.button5.TabIndex = 20;
+            this.button5.Text = "LoadWav";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click_1);
+            // 
             // SignalForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1129, 648);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.button8);
@@ -361,5 +373,6 @@
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button5;
     }
 }

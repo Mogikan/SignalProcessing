@@ -111,7 +111,7 @@ namespace SignalProcessing
                     {
                         chart1.Series[0].Points.Clear();
                         var stringValues = reader.ReadToEnd()
-                            .Split(new char[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            .Split(new char[] { '\r', '\n', ' ' }, StringSplitOptions.RemoveEmptyEntries);                        
                         var fileNameWOExtension = Path.GetFileNameWithoutExtension(fileName);
                         var settingsSelector = Path.GetFileNameWithoutExtension(fileNameWOExtension).Remove(fileNameWOExtension.Length - 2);
                         var selectedSettings = settings[settingsSelector];
@@ -124,10 +124,10 @@ namespace SignalProcessing
         }
 
 
-        private double[] _signal;
+        private double[] _signal = { 16, 14, 12, 10, 8, 6, 4, 2 };
         private byte[] _header;
         private string _fileName;
-        private Settings _settings;
+        private Settings _settings = new Settings(0, 1, 360, "");
 
         private void loadDataButton_Click(object sender, EventArgs e)
         {
@@ -1420,8 +1420,8 @@ namespace SignalProcessing
                 }
                 for (int i = 0; i < half; i++)
                 {
-                    a[2 * i] = (sum[i] + diff[i]) * 0.5;
-                    a[2 * i + 1] = (sum[i] - diff[i]) * 0.5;
+                    a[2 * i] = (sum[i] + diff[i]) ;
+                    a[2 * i + 1] = (sum[i] - diff[i]);
                 }                
                 n <<= 1;
             }
@@ -1529,6 +1529,13 @@ namespace SignalProcessing
         {
             DisplayData(_settings,
                 DaubechiesTransform(DaubechiesTransform(_signal, Direction.Forward), Direction.Inverse));
+        }
+
+        private void button5_Click_1(object sender, EventArgs e)
+        {
+            (_settings, _signal, _header, _fileName) = LoadWav();
+            ApplyTransform(HaarTransform, _signal, Direction.Forward);
+            
         }
     }
 }
