@@ -1366,7 +1366,7 @@ namespace SignalProcessing
                     }
                 }
             }
-            var backSignal = RecursiveHadamardTransform(daubechies, Direction.Inverse);
+            var backSignal = InverseDaubechies(daubechies, (int)nNumeric.Value);
             if (_settings.Id == "wav")
             {
                 SaveWav(backSignal, _header, _settings, _fileName, "Daubechies");
