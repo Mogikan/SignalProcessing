@@ -26,13 +26,15 @@ namespace SignalProcessing
 
         private class Settings
         {
-            public Settings(double baseValue, double step, double xFrequency, string yLabel)
+            public Settings(string id,double baseValue, double step, double xFrequency, string yLabel)
             {
+                Id = id;
                 BaseValue = baseValue;
                 Step = step;
                 XFrequency = xFrequency;
                 YLabel = yLabel;
             }
+            public string Id { get; set; }
             public double BaseValue { get; set; }
             public double Step { get; set; }
             public double XFrequency { get; set; }
@@ -43,14 +45,14 @@ namespace SignalProcessing
 
         private Dictionary<string, Settings> settings = new Dictionary<string, Settings>()
         {
-            {"cardio",new Settings(127,60,360,"мВ")},
-            {"reo",new Settings(0,50,360,"мОм") },
-            {"velo",new Settings(512,120,360 ,"мВ")},
-            {"spiro",new Settings(512,100 ,360,"Л")},
-            {"sawtooth", new Settings(0,1,360,"") },
-            {"triangle", new Settings(0,1,360,"") },
-            {"square", new Settings(0,1,360,"") },
-            {"wav",new Settings(0,1,44100,"")}
+            {"cardio",new Settings("cardio",127,60,360,"мВ")},
+            {"reo",new Settings("reo",0,50,360,"мОм") },
+            {"velo",new Settings("velo",512,120,360 ,"мВ")},
+            {"spiro",new Settings("spiro",512,100 ,360,"Л")},
+            {"sawtooth", new Settings("sawtooth",0,1,360,"") },
+            {"triangle", new Settings("triangle",0,1,360,"") },
+            {"square", new Settings("square",0,1,360,"") },
+            {"wav",new Settings("wav",0,1,44100,"")}
         };
 
         enum Direction
@@ -128,7 +130,7 @@ namespace SignalProcessing
         private double[] _signal = { 16, 14, 12, 10, 8, 6, 4, 2 };
         private byte[] _header;
         private string _fileName;
-        private Settings _settings = new Settings(0, 1, 360, "");
+        private Settings _settings = new Settings("mock",0, 1, 360, "");
 
         private void loadDataButton_Click(object sender, EventArgs e)
         {
@@ -422,29 +424,30 @@ namespace SignalProcessing
         {
             if (lowRadio.Checked)
             {
-                var transformedSignal = FastDFTN(GetComplexData(_signal), Direction.Forward);
-                var backSignal = FastDFTN(LowFrequenciesFilter(transformedSignal, (double)numericUpDown1.Value, _settings), Direction.Inverse);
-                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
+
+                //var transformedSignal = FastDFTN(GetComplexData(_signal), Direction.Forward);
+                //var backSignal = FastDFTN(LowFrequenciesFilter(transformedSignal, (double)numericUpDown1.Value, _settings), Direction.Inverse);
+                //SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"low{(int)numericUpDown1.Value}");
+                //ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Low frequencies filter");
             }
             if (highRadio.Checked)
             {
-                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = FastDFT(HighFrequenciesFilter(transformedSignal, (double)numericUpDown2.Value, _settings), Direction.Inverse);
-                SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "High frequencies filter");
+                //var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                //var backSignal = FastDFT(HighFrequenciesFilter(transformedSignal, (double)numericUpDown2.Value, _settings), Direction.Inverse);
+                //SaveWav(backSignal.Select((x) => x.Real).ToArray(), _header, _settings, _fileName, $"high{(int)numericUpDown2.Value}");
+                //ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "High frequencies filter");
             }
             if (stripeRadio.Checked)
             {
-                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = FastDFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Stripe frequencies filter");
+                //var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                //var backSignal = FastDFT(StripeFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
+                //ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Stripe frequencies filter");
             }
             if (rejectorRadio.Checked)
             {
-                var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
-                var backSignal = FastDFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
-                ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Rejector frequencies filter");
+                //var transformedSignal = FastDFT(GetComplexData(_signal), Direction.Forward);
+                //var backSignal = FastDFT(RejectorFilter(transformedSignal, (int)numericUpDown1.Value, (int)numericUpDown2.Value), Direction.Inverse);
+                //ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Rejector frequencies filter");
             }
         }
 
@@ -1288,50 +1291,87 @@ namespace SignalProcessing
 
         private void button8_Click(object sender, EventArgs e)
         {
-            var walsh = WalshTransform(_signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
-            if (nNumeric.Value > 0)
+            var haar = HaarTransform(_signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            int half = haar.Length >> 1;
+            if (numericUpDown1.Value > 0)
             {
                 if (lowRadio.Checked)
                 {
-                    for (int i = (int)nNumeric.Value * 2 + 1; i < walsh.Length; i++)
+                    int order = (int)numericUpDown1.Value;
+                    int n = CalculateArithmeticProgression(half, order);
+                    for (int i = haar.Length-n; i < haar.Length; i++)
                     {
-                        walsh[i] = 0;
-                    }
-                }
-                if (highRadio.Checked)
-                {
-                    for (int i = 0;i< (int)nNumeric.Value * 2 + 1; i++)
-                    {
-                        walsh[i] = 0;
+                        haar[i] = 0;
                     }
                 }
             }
-            var backSignal = WalshTransform(walsh, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Walsh");
+            if (numericUpDown2.Value>0)
+            {
+                if (highRadio.Checked)
+                {
+                    int order = (int)numericUpDown2.Value;
+                    int n = CalculateArithmeticProgression(half, order);
+                    n = haar.Length - n;
+                    for (int i = 0; i < n+1; i++)
+                    {
+                        haar[i] = 0;
+                    }
+                }
+            }
+            var backSignal = HaarTransform(haar, Direction.Inverse);
+            if (_settings.Id == "wav")
+            {
+                SaveWav(backSignal, _header, _settings, _fileName, "Haar");
+            }
+            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Haar");
+        }
+
+        private static int CalculateArithmeticProgression(int half, int order)
+        {
+            int n = 0;
+            int nhalf = half;
+            while (order > 0)
+            {
+                n += nhalf;
+                nhalf >>= 1;
+                order--;
+            }
+
+            return n;
         }
 
         private void button7_Click(object sender, EventArgs e)
         {
-            var hadamard = RecursiveHadamardTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            var daubechies = DaubechiesTransform(_signal.Take(1<<FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            var half = daubechies.Length >> 1;
             if (nNumeric.Value > 0)
             {
                 if (lowRadio.Checked)
                 {
-                    for (int i = (int)nNumeric.Value * 2 + 1; i < hadamard.Length; i++)
+                    int order = (int)numericUpDown1.Value;
+                    int n = CalculateArithmeticProgression(half, order);
+                    for (int i = daubechies.Length - n; i < daubechies.Length; i++)
                     {
-                        hadamard[i] = 0;
+                        daubechies[i] = 0;
                     }                    
                 }
                 if (highRadio.Checked)
                 {
-                    for (int i = 0; i < (int)nNumeric.Value * 2 + 1; i++)
+                    int order = (int)numericUpDown2.Value;
+                    int n = CalculateArithmeticProgression(half, order);
+                    n = daubechies.Length - n;
+                    for (int i = 0; i < n + 1; i++)
                     {
-                        hadamard[i] = 0;
+                        daubechies[i] = 0;
                     }
                 }
             }
-            var backSignal = RecursiveHadamardTransform(hadamard, Direction.Inverse);
-            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Hadamard");
+            var backSignal = RecursiveHadamardTransform(daubechies, Direction.Inverse);
+            if (_settings.Id == "wav")
+            {
+                SaveWav(backSignal, _header, _settings, _fileName, "Daubechies");
+            }
+            ShowChart(PrepareSignalPreviewData(backSignal, _settings), "", _settings.YLabel, "Daubechies");
         }
 
         private (double[] amplitude, double[] phase) CalculateMetricsHadamard(double[] signal)
@@ -1383,12 +1423,12 @@ namespace SignalProcessing
 
         private double[] HaarTransform(double[] signal, Direction direction)
         {            
-            return (direction == Direction.Forward)? ForwardHaar(signal):InverseHaar(signal);
+            return (direction == Direction.Forward)? ForwardHaar(signal,(int)nNumeric.Value):InverseHaar(signal,(int)nNumeric.Value);
         }
-        private double[] ForwardHaar(double[] a)
+        private double[] ForwardHaar(double[] a,int scale)
         {
             int n = a.Length;
-            while (n > 1)
+            while (n > scale)
             {
                 int half = n >> 1;
                 double[] sum = new double[half];
@@ -1407,9 +1447,9 @@ namespace SignalProcessing
             }
             return a;
         }
-        private double[] InverseHaar(double[] a)
+        private double[] InverseHaar(double[] a,int scale)
         {
-            int n = 2;
+            int n = scale;
             while (n <= a.Length)
             {
                 int half = n >> 1;
@@ -1433,9 +1473,7 @@ namespace SignalProcessing
 
         //
         // forwarsform scaling (smoothing) coefficients
-        //
-
-        private int _scale = 5;
+        //        
         private double h1 => (3 + Sqrt(3)) / (4 * Sqrt(2));
         private double h2 => (3 - Sqrt(3)) / (4 * Sqrt(2));
         private double h3 => (1 - Sqrt(3)) / (4 * Sqrt(2));
@@ -1457,11 +1495,11 @@ namespace SignalProcessing
         private double invG3 => g1;  // -h2
 
 
-        private double[] ForwardDaubechies(double[] a)
+        private double[] ForwardDaubechies(double[] a,int scale)
         {
             int N = a.Length;
             int n;
-            for (n = N; n >= 4 * (1<<_scale); n >>= 1)
+            for (n = N; n >= 4 * (1<<(scale-1)); n >>= 1)
             {
 
                 if (n >= 4)
@@ -1490,12 +1528,12 @@ namespace SignalProcessing
             }
             return a;
         }
-        private double[] InverseDaubechies(double[] a)
+        private double[] InverseDaubechies(double[] a,int scale)
         {
             int N = a.Length;
             int n;
-            for (n = 4 * (1 << _scale); n <= N; n <<= 1)
-            {
+            for (n = 4 * (1 << (scale-1)); n <= N; n <<= 1)
+            {   
                 int i, j;
                 int half = n >> 1;
                 int halfPls1 = half + 1;
@@ -1519,29 +1557,28 @@ namespace SignalProcessing
         }
         private double[] DaubechiesTransform(double[] signal, Direction direction)
         {            
-            return (direction == Direction.Forward) ? ForwardDaubechies(signal) : InverseDaubechies(signal);
+            return (direction == Direction.Forward) ? 
+                ForwardDaubechies(signal, (int)nNumeric.Value) 
+                : InverseDaubechies(signal,(int)nNumeric.Value);
         }
 
         private void haar_Click(object sender, EventArgs e)
         {
-            DisplayData(_settings,
-                HaarTransform(HaarTransform(_signal, Direction.Forward),Direction.Inverse));
-
+            var haar = HaarTransform(_signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(), Direction.Forward);
+            ShowChart(PrepareSignalPreviewData(haar, _settings), "", "", $"Daubechies transform");
         }
 
         private void daubechies_Click(object sender, EventArgs e)
         {
-            int mp = FindMaxPower(_signal.Length);
-            DisplayData(_settings,
-                DaubechiesTransform(DaubechiesTransform(_signal.Take(1<<mp).ToArray(), 
-                Direction.Forward), Direction.Inverse));
+            var daubechies = DaubechiesTransform(_signal.Take(1 << FindMaxPower(_signal.Length)).ToArray(),Direction.Forward);
+            ShowChart(PrepareSignalPreviewData(daubechies,_settings), "", "", $"Daubechies transform");
+            //DisplayData(_settings, DaubechiesTransform(daubechies, Direction.Inverse));
         }
 
         private void button5_Click_1(object sender, EventArgs e)
         {
             (_settings, _signal, _header, _fileName) = LoadWav();
-            ApplyTransform(HaarTransform, _signal, Direction.Forward);
-            
+            DisplayData(_settings, _signal);
         }
     }
 }

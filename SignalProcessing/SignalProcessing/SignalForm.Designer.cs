@@ -31,7 +31,6 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.button3 = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.rejectorRadio = new System.Windows.Forms.RadioButton();
             this.stripeRadio = new System.Windows.Forms.RadioButton();
@@ -48,11 +47,11 @@
             this.button6 = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
-            this.button7 = new System.Windows.Forms.Button();
-            this.button8 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button8 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
@@ -76,17 +75,6 @@
             this.chart1.Size = new System.Drawing.Size(1025, 632);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
-            // 
-            // button3
-            // 
-            this.button3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.button3.Location = new System.Drawing.Point(1041, 337);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(76, 22);
-            this.button3.TabIndex = 6;
-            this.button3.Text = "Filter";
-            this.button3.UseVisualStyleBackColor = true;
-            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // groupBox1
             // 
@@ -151,7 +139,7 @@
             // numericUpDown1
             // 
             this.numericUpDown1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown1.Location = new System.Drawing.Point(1041, 382);
+            this.numericUpDown1.Location = new System.Drawing.Point(1041, 350);
             this.numericUpDown1.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -165,7 +153,7 @@
             // 
             this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(1043, 366);
+            this.label4.Location = new System.Drawing.Point(1043, 334);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(23, 13);
             this.label4.TabIndex = 9;
@@ -174,7 +162,7 @@
             // numericUpDown2
             // 
             this.numericUpDown2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.numericUpDown2.Location = new System.Drawing.Point(1043, 421);
+            this.numericUpDown2.Location = new System.Drawing.Point(1043, 389);
             this.numericUpDown2.Maximum = new decimal(new int[] {
             100000,
             0,
@@ -213,15 +201,25 @@
             0,
             0,
             0});
+            this.nNumeric.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
             this.nNumeric.Name = "nNumeric";
             this.nNumeric.Size = new System.Drawing.Size(73, 20);
             this.nNumeric.TabIndex = 8;
+            this.nNumeric.Value = new decimal(new int[] {
+            2,
+            0,
+            0,
+            0});
             // 
             // label1
             // 
             this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(1044, 405);
+            this.label1.Location = new System.Drawing.Point(1044, 373);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(27, 13);
             this.label1.TabIndex = 9;
@@ -251,9 +249,9 @@
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(1044, 167);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(15, 13);
+            this.label3.Size = new System.Drawing.Size(34, 13);
             this.label3.TabIndex = 9;
-            this.label3.Text = "N";
+            this.label3.Text = "Scale";
             // 
             // label5
             // 
@@ -264,29 +262,9 @@
             this.label5.TabIndex = 17;
             this.label5.Text = "Input";
             // 
-            // button7
-            // 
-            this.button7.Location = new System.Drawing.Point(1042, 141);
-            this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(77, 23);
-            this.button7.TabIndex = 18;
-            this.button7.Text = "Hadam. Filter";
-            this.button7.UseVisualStyleBackColor = true;
-            this.button7.Click += new System.EventHandler(this.button7_Click);
-            // 
-            // button8
-            // 
-            this.button8.Location = new System.Drawing.Point(1043, 112);
-            this.button8.Name = "button8";
-            this.button8.Size = new System.Drawing.Size(76, 23);
-            this.button8.TabIndex = 18;
-            this.button8.Text = "Walsh Filter";
-            this.button8.UseVisualStyleBackColor = true;
-            this.button8.Click += new System.EventHandler(this.button8_Click);
-            // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(1043, 209);
+            this.button1.Location = new System.Drawing.Point(1041, 112);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 19;
@@ -296,7 +274,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(1043, 238);
+            this.button2.Location = new System.Drawing.Point(1041, 141);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 19;
@@ -313,6 +291,26 @@
             this.button5.Text = "LoadWav";
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click_1);
+            // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(1041, 444);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(77, 23);
+            this.button7.TabIndex = 18;
+            this.button7.Text = "Daub. Filter";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
+            // button8
+            // 
+            this.button8.Location = new System.Drawing.Point(1042, 415);
+            this.button8.Name = "button8";
+            this.button8.Size = new System.Drawing.Size(76, 23);
+            this.button8.TabIndex = 18;
+            this.button8.Text = "Haar Filter";
+            this.button8.UseVisualStyleBackColor = true;
+            this.button8.Click += new System.EventHandler(this.button8_Click);
             // 
             // SignalForm
             // 
@@ -335,7 +333,6 @@
             this.Controls.Add(this.numericUpDown2);
             this.Controls.Add(this.numericUpDown1);
             this.Controls.Add(this.groupBox1);
-            this.Controls.Add(this.button3);
             this.Controls.Add(this.chart1);
             this.Name = "SignalForm";
             this.Text = "SignalForm";
@@ -352,7 +349,6 @@
 
         #endregion
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
-        private System.Windows.Forms.Button button3;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RadioButton rejectorRadio;
         private System.Windows.Forms.RadioButton stripeRadio;
@@ -369,10 +365,10 @@
         private System.Windows.Forms.Button button6;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label5;
-        private System.Windows.Forms.Button button7;
-        private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.Button button8;
     }
 }
